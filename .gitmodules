@@ -1,0 +1,3 @@
+[submodule "ALU"]
+	path = ALU
+	url = git@github.com:Wanghley/VeriALU.git
