@@ -1,3 +1,0 @@
-./Wrapper.v
-./processor.v
-../../test_files/Wrapper_tb.v

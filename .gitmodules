@@ -1,9 +1,0 @@
-[submodule "ALU"]
-	path = main/proc/ALU
-	url = git@github.com:Wanghley/VeriALU.git
-[submodule "Regfile"]
-	path = main/proc/Regfile
-	url = git@github.com:Wanghley/VeriRegFile.git
-[submodule "multdiv"]
-	path = main/proc/multdiv
-	url = git@github.com:Wanghley/VeriMultDiv.git
