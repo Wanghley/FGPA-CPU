@@ -1,0 +1,9 @@
+[submodule "multdiv"]
+	path = multdiv
+	url = git@github.com:Wanghley/VeriMultDiv.git
+[submodule "Regfile"]
+	path = Regfile
+	url = git@github.com:Wanghley/VeriRegFile.git
+[submodule "ALU"]
+	path = ALU
+	url = git@github.com:Wanghley/VeriALU.git
