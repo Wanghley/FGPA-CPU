@@ -1,0 +1,13 @@
+
+# Ignore vvp files
+*.vvp
+
+# Ignore txt files
+*.txt
+
+# Ignore tml_Reports folder
+tml_Reports/
+
+# Ignore log files
+*.log
+```
