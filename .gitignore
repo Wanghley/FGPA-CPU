@@ -11,3 +11,7 @@ tml_Reports/
 # Ignore log files
 *.log
 ```
+
+# ignore .venv folder
+.venv/
+output/
