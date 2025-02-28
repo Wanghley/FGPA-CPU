@@ -1,7 +1,7 @@
 module latch(PCin, Ain, Bin, IRin, clk, PCout, Aout, Bout, IRout, en, clr);
     input [31:0] PCin, Ain, Bin, IRin;
     input clk, en, clr;
-    output PCout, Aout, Bout, IRout;
+    output [31:0] PCout, Aout, Bout, IRout;
 
     // Create inverted clock signal to latch data on falling edge
     wire invert_clk;
