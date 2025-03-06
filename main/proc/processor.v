@@ -134,7 +134,7 @@ module processor(
     );
 
     // control unit
-    wire aluInB, RWE, Dmem_WE, mem_to_reg;
+    wire aluInB, RWE, Dmem_WE, mem_to_reg,regfile_readB_rt_rd;
     wire [4:0] aluop_out;
     control ctrl(
         .opcode(opcode),
@@ -143,7 +143,8 @@ module processor(
         .aluInB(aluInB),
         .RWE(RWE),
         .Dmem_WE(Dmem_WE),
-        .mem_to_reg(mem_to_reg)
+        .mem_to_reg(mem_to_reg),
+        .regfile_readB_rt_rd(regfile_readB_rt_rd)
     );
 
     wire [31:0] ctrl_in;
@@ -155,11 +156,11 @@ module processor(
     assign ctrl_in[14] = Dmem_WE;
     assign ctrl_in[13] = mem_to_reg;
     // TODO: implement control signals for the rest of the control unit
-    assign ctrl_in[14:0] = 15'd0;
+    assign ctrl_in[12:0] = 15'd0;
 
     // pass arguments to my registerfile in the wrapper module
     assign ctrl_readRegA = rs;
-    assign ctrl_readRegB = rt;
+    assign ctrl_readRegB = (regfile_readB_rt_rd) ? rd : rt;
 
     // rs and rt data come from the regfile in data_readRegA and data_readRegB
     // extend immediate value
@@ -254,7 +255,7 @@ module processor(
     );
     latch B_XM_LATCH(
         .data_out(B_XM),
-        .data_in(data_ALUInB),
+        .data_in(B_DX),
         .clk(clock),
         .en(1'b1),
         .clr(reset)
@@ -319,6 +320,7 @@ module processor(
         .en(1'b1),
         .clr(reset)
     );
+
     /* ------------------------------------------------------------- */
     /* ############################################################# */
     /* #                Write Back (WB) Stage                      # */
