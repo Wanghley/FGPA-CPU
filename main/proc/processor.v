@@ -66,17 +66,22 @@ module processor(
     /* ############################################################# */
     // Create register for PC
     wire [31:0] PCout, PCin;
+    wire pc_stall; // Add stall signal for PC
 
     latch PROGRAMCOUNTER(
         .data_out(PCout),
         .data_in(PCin),
         .clk(clock),
-        .en(1'b1), // FIXME: need to buildup logic for this signal with branch and jump instructions
+        .en(~pc_stall), // FIXME: need to buildup logic for this signal with branch and jump instructions
         .clr(reset)
     );
 
     // calculate next PC
     wire [31:0] PCnext;
+    wire [31:0] branch_target; // Target address for branches
+    wire branch_taken;         // Branch prediction signal
+    wire is_jump;              // Jump detection signal
+
     cla nextPC(
         .S(PCnext),
         .cout(),
@@ -84,9 +89,58 @@ module processor(
         .x(PCout),
         .y(32'b1)
     );
-    assign PCin = PCnext;
+
     assign address_imem = PCout;
-    
+
+    // -------------------------------------------------------------
+    // Branch and Jump Detection Logic
+    // This section implements branch prediction and control flow handling
+    // We detect jumps early in the IF stage and handle branch prediction
+    // -------------------------------------------------------------
+
+    // Extract opcode from instruction to identify control flow instructions
+    wire [4:0] if_opcode = q_imem[31:27];
+    assign is_jump = (if_opcode == 5'b00001) || (if_opcode == 5'b00011); // j or jal
+    wire is_branch = (if_opcode == 5'b00010) || (if_opcode == 5'b00110); // bne or blt
+
+    // Sign-extend immediate field from instruction for branch/jump targets
+    wire [31:0] if_imm_ext;
+    sra IF_IMMEXT(
+        .out(if_imm_ext),
+        .x({q_imem[16:0], 15'b0}),
+        .shamt(5'd15) // 15 bit shift
+    );
+
+    // Calculate potential branch target address using PC+1 as base
+    cla branchPCIF(
+        .S(branch_target),
+        .cout(),
+        .ovf(),
+        .x(PCnext), // Use PC+1 as base
+        .y(if_imm_ext)
+    );
+
+    // Simple static branch prediction - always predict branches not taken
+    // Could be enhanced to dynamic prediction in future iterations
+    assign branch_taken = 1'b0;
+
+    // Branch misprediction detection from EX stage
+    // If branch condition evaluates true in EX, we have a mispredict
+    wire branch_mispredict = branch; // Branch signal comes from EX stage evaluation
+
+    // PC input selection logic with priority:
+    // 1. Correcting mispredicted branches (highest priority)
+    // 2. Jump instructions (unconditional control flow)
+    // 3. Predicted taken branches (not currently used with static prediction)
+    // 4. Normal sequential execution (PC+1)
+    assign PCin = ctrl_flow_change ? jump_pc : 
+                is_jump ? if_imm_ext :
+                branch_taken ? branch_target : 
+                PCnext;
+
+    // Stall PC when a branch is detected but not yet resolved
+    // This prevents fetching instructions that might be discarded
+    assign pc_stall = is_branch && !branch_mispredict; // Stall on unresolved branches
 
     /* ------------------------------------------------------------- */
     /* |                           FD Latch                        | */
@@ -134,7 +188,7 @@ module processor(
     );
 
     // control unit
-    wire aluInB, RWE, Dmem_WE, mem_to_reg,regfile_readB_rt_rd, bne, blt, br, jp;
+    wire aluInB, RWE, Dmem_WE, mem_to_reg,regfile_readB_rt_rd, bne, blt, br, jp, jal, jr;
     wire [4:0] aluop_out;
     control ctrl(
         .opcode(opcode),
@@ -148,7 +202,9 @@ module processor(
         .bne(bne),
         .blt(blt),
         .br(br),
-        .jp(jp)
+        .jp(jp),
+        .jal(jal),
+        .jr(jr)
     );
 
     wire [31:0] ctrl_in;
@@ -163,11 +219,13 @@ module processor(
     assign ctrl_in[11] = blt;
     assign ctrl_in[10] = br;
     assign ctrl_in[9] = jp;
+    assign ctrl_in[8] = jal;
+    assign ctrl_in[7] = jr;
     // TODO: implement control signals for the rest of the control unit
-    assign ctrl_in[8:0] = 15'd0;
+    assign ctrl_in[6:0] = 15'd0;
 
     // pass arguments to my registerfile in the wrapper module
-    assign ctrl_readRegA = rs;
+    assign ctrl_readRegA = jr ? rd : rs;
     assign ctrl_readRegB = (regfile_readB_rt_rd) ? rd : rt;
 
     // rs and rt data come from the regfile in data_readRegA and data_readRegB
@@ -261,15 +319,32 @@ module processor(
         .y(imm_DX)
     );
 
-    // logic for BNE, BLT
+    // Branch and Jump control logic
+    // This section handles all control flow changes
+    // 1. Branch instructions (bne, blt) - conditional PC redirection
+    // 2. Jump instructions - unconditional PC redirection
+    // 3. Branch prediction resolution - correct mispredicted branches
+
+    // Determine if a branch should be taken based on ALU compare results
+    // CONTROL_DX[12] = bne, CONTROL_DX[11] = blt, CONTROL_DX[10] = br (branch instruction)
     wire branch;
     assign branch = ((ne_ALU & CONTROL_DX[12]) || (lessThan_ALU & CONTROL_DX[11])) && CONTROL_DX[10]; // ((bne & ne) || (blt & lessThan)) && br
-    wire [31:0] branchPC;
-    assign branchPC = (branch) ? branchPC_calculated : PC_DX;
-    wire [31:0] jumpPC;
-    assign jumpPC = (CONTROL_DX[9]) ? imm_DX : branchPC;
 
-    // TODO: need to implement logic for JR instruction and JAL instruction
+    // Select branch target PC if branch condition is true, otherwise next sequential PC
+    wire [31:0] branch_pc = branch ? branchPC_calculated : PCnext;
+
+    // Final PC selection - choose jump target if this is a jump instruction (CONTROL_DX[9])
+    // otherwise use the branch_pc value (which may be either the branch target or next PC)
+    // check if it is a jr instruction
+    // Correct jump PC selection logic
+    wire is_jump_ex = CONTROL_DX[9] || CONTROL_DX[8] || CONTROL_DX[7]; // j, jal, or jr
+    wire [31:0] jump_pc = CONTROL_DX[7] ? A_DX :             // JR: jump to register value
+                         (CONTROL_DX[9] || CONTROL_DX[8]) ? imm_DX :  // J/JAL: jump to immediate
+                         branch_pc;
+
+    // Control flow change signal - true when any jump or taken branch should redirect the PC
+    wire ctrl_flow_change = is_jump_ex || branch;
+
 
 
 
@@ -279,7 +354,7 @@ module processor(
     wire [31:0] O_XM, B_XM, IR_XM, CONTROL_XM;
     latch O_XM_LATCH(
         .data_out(O_XM),
-        .data_in(ALUout),
+        .data_in(CONTROL_DX[8] ? PC_DX : ALUout),
         .clk(clock),
         .en(1'b1),
         .clr(reset) 
@@ -356,9 +431,13 @@ module processor(
     /* ############################################################# */
     /* #                Write Back (WB) Stage                      # */
     /* ############################################################# */
+
+    // Decide which register to write to
+    wire [31:0] regWrite = (IR_MW[31:27]==5'b00011) ? 32'd31 : CONTROL_MW[31:27];
+
     assign data_writeReg = (CONTROL_MW[13]) ? D_MW : O_MW;
     assign ctrl_writeEnable = CONTROL_MW[15];
-    assign ctrl_writeReg = CONTROL_MW[31:27];
+    assign ctrl_writeReg = regWrite;
 
 	
 	/* END CODE */
