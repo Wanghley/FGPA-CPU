@@ -24,3 +24,8 @@ tml_Reports/
 test_files/output_files/*
 html_reports/*
 log/*
+
+# Ignore .pyc files and __pycache__ folder and .venv folder
+*.pyc
+__pycache__/
+.venv/
