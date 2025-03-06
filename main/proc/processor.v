@@ -134,7 +134,7 @@ module processor(
     );
 
     // control unit
-    wire aluInB, RWE, Dmem_WE, mem_to_reg,regfile_readB_rt_rd;
+    wire aluInB, RWE, Dmem_WE, mem_to_reg,regfile_readB_rt_rd, bne, blt, br, jp;
     wire [4:0] aluop_out;
     control ctrl(
         .opcode(opcode),
@@ -144,7 +144,11 @@ module processor(
         .RWE(RWE),
         .Dmem_WE(Dmem_WE),
         .mem_to_reg(mem_to_reg),
-        .regfile_readB_rt_rd(regfile_readB_rt_rd)
+        .regfile_readB_rt_rd(regfile_readB_rt_rd),
+        .bne(bne),
+        .blt(blt),
+        .br(br),
+        .jp(jp)
     );
 
     wire [31:0] ctrl_in;
@@ -155,8 +159,12 @@ module processor(
     assign ctrl_in[15] = RWE;
     assign ctrl_in[14] = Dmem_WE;
     assign ctrl_in[13] = mem_to_reg;
+    assign ctrl_in[12] = bne;
+    assign ctrl_in[11] = blt;
+    assign ctrl_in[10] = br;
+    assign ctrl_in[9] = jp;
     // TODO: implement control signals for the rest of the control unit
-    assign ctrl_in[12:0] = 15'd0;
+    assign ctrl_in[8:0] = 15'd0;
 
     // pass arguments to my registerfile in the wrapper module
     assign ctrl_readRegA = rs;
@@ -231,16 +239,39 @@ module processor(
     
     // ALU
     wire [31:0] ALUout;
+    wire ne_ALU, lessThan_ALU, overflow_ALU; // flags for not equality, less than, overflow
     alu ALU(
         .data_operandA(A_DX),
         .data_operandB(data_ALUInB),
         .ctrl_ALUopcode(alu_op_ctrl),
         .data_result(ALUout),
         .ctrl_shiftamt(shamt_alu_ctrl),
-        .isNotEqual(),
-        .isLessThan(),
+        .isNotEqual(ne_ALU),
+        .isLessThan(lessThan_ALU),
         .overflow()
     );
+
+    // Sum of PC and target for branch instruction
+    wire [31:0] branchPC_calculated;
+    cla branchPC(
+        .S(branchPC_calculated),
+        .cout(),
+        .ovf(),
+        .x(PC_DX),
+        .y(imm_DX)
+    );
+
+    // logic for BNE, BLT
+    wire branch;
+    assign branch = ((ne_ALU & CONTROL_DX[12]) || (lessThan_ALU & CONTROL_DX[11])) && CONTROL_DX[10]; // ((bne & ne) || (blt & lessThan)) && br
+    wire [31:0] branchPC;
+    assign branchPC = (branch) ? branchPC_calculated : PC_DX;
+    wire [31:0] jumpPC;
+    assign jumpPC = (CONTROL_DX[9]) ? imm_DX : branchPC;
+
+    // TODO: need to implement logic for JR instruction and JAL instruction
+
+
 
     /* ------------------------------------------------------------- */
     /* |                           XM Latch                        | */
