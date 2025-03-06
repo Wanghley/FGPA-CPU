@@ -1,200 +1,105 @@
-<!-- PROJECT SHIELDS -->
-<a name="readme-top"></a>
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/wanghley)
+# Assembly File Autotester
+## Overview 
+This repository provides an automated, local way to test your ECE 350 processor against various assembly files. This repository also contains the documents needed for the GTKWave Lab.
 
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/wanghley/FPGA-CPU">
-    <img src="image.gif" alt="Logo" width="280">
-  </a>
+## Setup
+**Note:** At each step, you may need to restart your terminal session to see the changes.
+1. Follow the *Private Fork* section of the [Git setup guide](https://docs.google.com/document/d/1yTgAMt511NsHbNm4u5v4_3lDaHDfIzQTBqMd2rstJxM/edit?tab=t.0#heading=h.krj7x2tq9xbq) to create a fork of this repository. 
+2. Install Icarus Verilog and GTKWave by following the guide [here](https://docs.google.com/document/d/1RaLEdjCxocIHsXdHlYIY3IXyU-FsCGMA046p8uV3ypU/edit?usp=drive_link)
+   - Check you have Icarus Verilog installed by running `iverilog -V` in your terminal
+   - Check you have GTKWave installed by running `gtkwave` and verifying the application opens
+3. Install Python 3.9.13 or later [here](https://www.python.org/downloads/)
+   - Check you have Python installed by running `python --version`
+4. Install pip [here](https://pip.pypa.io/en/stable/installation/)
+   - Check you have pip installed by running `pip --version`
+5. Install required packages by running `pip install -r requirements.txt`
 
-  <h3 align="center">FPGA CPU</h3>
-
-  <p align="center">
-    Design and simulate a five-stage single-issue 32-bit processor using Verilog.
-    <br />
-    <a href="#"><strong>Explore the code »</strong></a>
-    <br />
-  </p>
-</div>
-
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
-    <li><a href="#built-with">Built With</a></li>
-    <li><a href="#getting-started">Getting Started</a></li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#folder-structure">Folder Structure</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
-
-<!-- ABOUT THE PROJECT -->
-## About The Project
-
-The FPGA CPU project involves designing and simulating a five-stage single-issue 32-bit processor using Verilog. The design integrates a register file, ALU, and multdiv units, and implements pipeline latches, bypassing, and hazard handling to maximize efficiency.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-### Built With
-
-<img src="https://img.shields.io/badge/Verilog-00599C?style=for-the-badge&logo=verilog&logoColor=white" alt="verilog" style="vertical-align:top; margin:4px"> 
-<img src="https://img.shields.io/badge/Vivado-00599C?style=for-the-badge&logo=vivado&logoColor=white" alt="vivado" style="vertical-align:top; margin:4px"> 
-<img src="https://img.shields.io/badge/GTKWave-00599C?style=for-the-badge&logo=gtkwave&logoColor=white" alt="gtkwave" style="vertical-align:top; margin:4px">
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- GETTING STARTED -->
-## Getting Started
-
-To get started with the FPGA CPU project, follow the instructions below:
-
-### Prerequisites
-
-* [Icarus Verilog](https://steveicarus.github.io/iverilog/)
-* [GTKWave](http://gtkwave.sourceforge.net/)
-* [Vivado](https://www.xilinx.com/products/design-tools/vivado.html)
-
-### Installation
-
-1. Clone the repo
-   ```sh
-   git clone https://github.com/wanghley/FPGA-CPU.git
-   ```
-2. Open the project in vscode
-    ```sh
-    code FPGA-CPU
-    ```
-3. Install the prerequisites
-    ```sh
-    sudo apt-get install iverilog
-    sudo apt-get install gtkwave
-    ```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- USAGE -->
 ## Usage
+1. Place your processor source files in the `main/proc` directory.
+2. Run `python autotester.py`
+    - You may also specify a different configuration file by running `python autotester.py <config_file>`.
+3. Your test results will be saved in the `html_reports` directory.
 
-This project involves designing and simulating a five-stage single-issue 32-bit processor using Verilog. The processor integrates a register file, ALU, and multdiv units, and implements pipeline latches, bypassing, and hazard handling to maximize efficiency.
+## Output
+The autotester will generate an HTML report that mimics Gradescope output to the `html_reports` directory. This file will automatically open in your default browser. Each block in the HTML report represents a single test case and will show the following information:
+* Assembly file contents
+* Number of cycles
+* Icarus Verilog warnings or errors (if applicable)
+* Expected output vs. actual output
 
-### How to Run
 
-1. Open the project in Vivado.
-2. Synthesize and implement the design.
-3. Run the simulation to verify the processor's functionality.
+Each block is color coded to indicate the test result:
+* Green: All registers match expected output
+* Orange: Test passed but iverilog warnings were present
+* Red: One or more registers do not match expected output
+* Gray: Test failed to run
 
-### Features
+**Note**: If the code hangs when running the tests, this is likely because you have a combinational loop in your processor that needs to be removed. For example:
+```verilog
+assign a = b ? c : d; // a relies on b
+assign b = a ? a : c; // but b also relies on a
+```
+You can exit the run by pressing `Ctrl+C` in the terminal.
 
-- **Pipeline Stages:**
-  - Instruction Fetch (IF)
-  - Instruction Decode (ID)
-  - Execute (EX)
-  - Memory Access (MEM)
-  - Write Back (WB)
 
-- **Hazard Handling:**
-  - Data hazards
-  - Control hazards
+## Adding New Tests
+1. Place the assembly files to test in the `test_files/assembly_files` directory and their expected files in the `test_files/verification_files` directory. Refer to the "File Structure" section of the Checkpoint 4: Processor document for instructions on formatting the expected output files, or you can use any of the provided expected files as a reference.
+2. Update the `active_{ACTIVE_FILE}.txt` file to include the new tests if needed.
 
-- **Bypassing:**
-  - Forwarding logic to avoid stalls
+## Manual Testing
+If you are running into issues with the autotester, you can manually compile and test your processor with the following commands:
+### Assembly
+1. Place your assembly files in the `test_files/assembly_files` directory.
+2. Place your expected output files in the `test_files/verification_files` directory.
+3. From the root directory, run `python assembler-python-version/assemble.py test_files/assembly_files/<asm_file_name>.s`
+4. This command will output a .mem file to the `test_files/assembly_files` directory. Move the mem file to the `test_files/mem_files` directory.
+### FileList
+1. Copy `test_files/Wrapper_tb.v` to the `main/proc` directory.
+2. In your terminal, change directory into `main/proc`
+3. On Mac/Linux, run `find . -name "*.v" > FileList.txt`
+3. On Windows cmd prompt, run `dir /s /b *.v > FileList.txt`
+3. On Windows PowerShell, run `Get-ChildItem -Recurse -Name -Filter *.v | Out-File -FilePath FileList.txt -Encoding Ascii`
+### Verilog Compilation
+1. In your terminal, run `iverilog -Wimplicit -o proc.vvp -c FileList.txt -s Wrapper_tb -P Wrapper_tb.FILE=\"test_name\"`
+2. Run `vvp proc.vvp`
+   - Failed registers will be displayed in the terminal, and an output of `Finished:P` means that all registers passed.
+   - If you are on Windows PowerShell, you may need to escape your file like this: `-P 't.FILE_NAME=""""r2.hex""""'`
+3. To open the GTKWave file, run `gtkwave ../../test_files/output_files/test_name.vcd`
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## Important Parameters
+The `config.ini` configuration file provides numerous options for the autotester. The most important are:
+* `PROCS`: The folder containing the processor files. This is provided as `main` by default and all of your processor files should go into `main/proc`. 
+* `FILT_ASM`: Enables filtering of the `test_files/assembly_files` directory. If set to `True`, only files listed in the `active_{ACTIVE_FILE}.txt` file are tested. 
+* `ACTIVE_FILE`: The file containing the assembly files you want to test against. These files can be found in `test_files/assembly_files`. By defalt, there are three premade options for each of the Gradescope checkpoints: `baby`, `hazardous`, and `final`. 
+* `EN_MT`: This enables multithreading. If you run into issues, try setting this to `False`. 
 
-<!-- FOLDER STRUCTURE -->
-## Folder Structure
+## All Parameters
+### Assembler
+* `FILT_ASM`: Enables filtering of the `test_files/assembly_files` directory. If set to `True`, only files listed in the `active_{ACTIVE_FILE}.txt` file are tested. 
+* `ACTIVE_FILE`: The file containing the assembly files you want to test against. These files can be found in `test_files/assembly_files`. By defalt, there are three premade options for each of the Gradescope checkpoints: `baby`, `hazardous`, and `final`. 
+* `ASM_COMP`: If set to `ALWAYS`, the assembler will always be run. If set to `NEVER`, the assembler will never be run. If set to `AUTO`, the assembler will only be run if detects any changes to the active assembly files.
+* `MODE`: The mode of the assembler. This can either be `MIPS` for the standard processor or `LAB` for the modified lab processor.
 
-The project is organized into the following folders:
+### Processor
+* `EN_VERILOG_CHECK`: If set to `True`, the banned Verilog checker will be run. Please note that this checker may produce false positives and false negatives. Your final Gradescope submission will be checked manually for banned Verilog constructs. Refer to the Checkpoint 4: Processor document for the full list of banned Verilog constructs.
+* `ZIP`: If set to `True`, one zip file will be made for every first-level subdirectory in `PROCS`. Only `.v` files will be included in the zip files. This facilitates Gradescope submission.  
 
-- **src**: Contains the Verilog source files for the processor design.
-  - **alu**: Arithmetic Logic Unit modules.
-  - **multdiv**: Multiplication and Division units.
-  - **regfile**: Register file modules.
-  - **pipeline**: Pipeline stage modules.
-- **testbench**: Contains the testbench files used for simulation and verification.
-- **docs**: Documentation related to the project, including design specifications and reports.
-- **tools**: Scripts and tools used for automation, such as the autotester script.
-- **results**: Output files generated from simulations and tests.
+### Logging
+* `LOG_LEVEL`: The level of logging to use. By default, this is set to `INFO`.
+    * `INFO`: logs completion of each step, and everything below.
+    * `IVERILOG`: logs all iverilog output from processor compilation, and everything below.
+    * `WARN`: logs recoverable errors (e.g., failed processor compilation), and everything below.
+    * `ERROR`: logs unrecoverable errors (e.g., missing assembly files).
+    * `NONE`: logs nothing.
+* `LOG_LOC`: The location to output the log. This can be either `TERM` for console output or `FILE` for file output. 
+* `LOG_DIR`: If `LOG_LOC` is set to `FILE`, this is where the log files are saved. 
+* `LOG_ROLL`: Enables rolling log files. If set to `True`, only the five most recent files are kept in `LOG_DIR`.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+### HTML
+* `THEME`: The default theme for the HTML web page. This can either be `LIGHT` or `DARK`.
+* `AUTO_OPEN`: If set to `True`, the HTML web page will automatically open in your default browser once the tests are complete.
 
-<!-- ROADMAP -->
-## Roadmap
-
-- [x] Integrate register file, ALU, and multdiv units
-- [ ] Design the processor
-- [ ] Implement pipeline stages
-- [ ] Optimize hazard handling
-- [ ] Improve bypassing logic
-
-See the [open issues](https://github.com/wanghley/FPGA-CPU/issues) for a full list of proposed features and known issues.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- CONTRIBUTING -->
-## Contributing
-
-Contributions are welcome! If you have suggestions, improvements, or bug fixes, feel free to open an issue or submit a pull request.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- LICENSE -->
-## License
-
-Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- CONTACT -->
-## Contact
-
-Wanghley Soares Martins - [@wanghley](https://instagram.com/wanghley) - wanghley@wanghley.com
-
-Project Link: [https://github.com/wanghley/FPGA-CPU](https://github.com/wanghley/FPGA-CPU)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-* [Img Shields](https://shields.io)
-* [GitHub Pages](https://pages.github.com)
-* [Font Awesome](https://fontawesome.com)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- MARKDOWN LINKS & IMAGES -->
-[contributors-shield]: https://img.shields.io/github/contributors/wanghley/FPGA-CPU?style=for-the-badge
-[contributors-url]: https://github.com/wanghley/FPGA-CPU/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/wanghley/FPGA-CPU.svg?style=for-the-badge
-[forks-url]: https://github.com/wanghley/FPGA-CPU/network/members
-[stars-shield]: https://img.shields.io/github/stars/wanghley/FPGA-CPU.svg?style=for-the-badge
-[stars-url]: https://github.com/wanghley/FPGA-CPU/stargazers
-[issues-shield]: https://img.shields.io/github/issues/wanghley/FPGA-CPU.svg?style=for-the-badge
-[issues-url]: https://github.com/wanghley/FPGA-CPU/issues
-[license-shield]: https://img.shields.io/github/license/wanghley/FPGA-CPU.svg?style=for-the-badge
-[license-url]: https://github.com/wanghley/FPGA-CPU/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/wanghley
+### Advanced
+* `EN_CSV`: Enables CSV output against expected processor performance. Mainly for TA use. 
+* `OUT_ROLL`: Enables rolling CSV output files. If set to `True`, only the five most recent files are kept in the `output` directory.
+* `EN_MT`: This enables multithreading. If you run into issues, try setting this to `False`.
