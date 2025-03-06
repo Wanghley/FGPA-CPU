@@ -19,3 +19,6 @@ tml_Reports/
 *.vcd
 *.zip
 *.html
+
+# ignore test files/output_files
+test_files/output_files/

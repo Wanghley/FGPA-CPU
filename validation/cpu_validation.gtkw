@@ -1,0 +1,109 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Thu Mar  6 14:29:28 2025
+[*]
+[dumpfile] "/Users/wanghley/Workspace/Projects/CPU/FPGA-CPU/test_files/output_files/memory_no_bypass.vcd"
+[dumpfile_mtime] "Thu Mar  6 14:23:18 2025"
+[dumpfile_size] 506724
+[savefile] "/Users/wanghley/Workspace/Projects/CPU/FPGA-CPU/validation/cpu_validation.gtkw"
+[timestart] 0
+[size] 1920 1147
+[pos] -1 -1
+*-16.412323 185300 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[markername] AA
+[markername] BB
+[markername] CC
+[markername] DD
+[markername] EE
+[markername] FF
+[markername] GG
+[markername] HH
+[markername] II
+[markername] JJ
+[markername] KK
+[markername] LL
+[markername] MM
+[markername] NN
+[markername] OO
+[markername] PP
+[markername] QQ
+[markername] RR
+[markername] SS
+[markername] TT
+[markername] UU
+[markername] VV
+[markername] WW
+[markername] XX
+[markername] YY
+[markername] ZZ
+[treeopen] Wrapper_tb.
+[treeopen] Wrapper_tb.CPU.
+[treeopen] Wrapper_tb.RegisterFile.reg_write[1].
+[treeopen] Wrapper_tb.RegisterFile.reg_write[2].
+[sst_width] 255
+[signals_width] 454
+[sst_expanded] 1
+[sst_vpaned_height] 771
+@24
+Wrapper_tb.CPU.PCout[31:0]
+@28
+Wrapper_tb.CPU.clock
+@800200
+-CTRL
+@c00028
+Wrapper_tb.CPU.CONTROL_DX[31:0]
+@28
+(0)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(1)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(2)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(3)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(4)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(5)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(6)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(7)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(8)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(9)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(10)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(11)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(12)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(13)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(14)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(15)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(16)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(17)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(18)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(19)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(20)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(21)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(22)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(23)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(24)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(25)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(26)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(27)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(28)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(29)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(30)Wrapper_tb.CPU.CONTROL_DX[31:0]
+(31)Wrapper_tb.CPU.CONTROL_DX[31:0]
+@1401200
+-group_end
+@22
+Wrapper_tb.CPU.CONTROL_MW[31:0]
+Wrapper_tb.CPU.CONTROL_XM[31:0]
+@28
+Wrapper_tb.CPU.aluInB
+Wrapper_tb.CPU.RWE
+Wrapper_tb.CPU.Dmem_WE
+Wrapper_tb.CPU.mem_to_reg
+@1000200
+-CTRL
+@28
+Wrapper_tb.CPU.data_writeReg[31:0]
+Wrapper_tb.CPU.IR_FD[31:0]
+@29
+Wrapper_tb.CPU.IR_DX[31:0]
+@28
+Wrapper_tb.CPU.IR_XM[31:0]
+Wrapper_tb.CPU.IR_MW[31:0]
+[pattern_trace] 1
+[pattern_trace] 0
