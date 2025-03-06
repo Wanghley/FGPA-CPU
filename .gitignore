@@ -21,4 +21,5 @@ tml_Reports/
 *.html
 
 # ignore test files/output_files
-test_files/output_files/
+test_files/output_files/*
+html_reports/*
