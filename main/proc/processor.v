@@ -284,7 +284,7 @@ module processor(
     assign address_dmem = O_XM;
     assign data = B_XM;
     assign wren = CONTROL_XM[14];
-    assign dmem_out = q_dmem
+    assign dmem_out = q_dmem;
 
 
     /* ------------------------------------------------------------- */
@@ -323,7 +323,7 @@ module processor(
     /* ############################################################# */
     /* #                Write Back (WB) Stage                      # */
     /* ############################################################# */
-    assign data_writeReg = CONTROL_MW[13] ? O_MW : D_MW;
+    assign data_writeReg = (CONTROL_MW[13]) ? D_MW : O_MW;
     assign ctrl_writeEnable = CONTROL_MW[15];
     assign ctrl_writeReg = CONTROL_MW[31:27];
 
