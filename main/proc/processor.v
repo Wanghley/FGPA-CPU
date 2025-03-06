@@ -134,14 +134,16 @@ module processor(
     );
 
     // control unit
-    wire aluInB, RWE;
+    wire aluInB, RWE, Dmem_WE, mem_to_reg;
     wire [4:0] aluop_out;
     control ctrl(
         .opcode(opcode),
         .aluop_in(aluop),
         .aluop(aluop_out),
         .aluInB(aluInB),
-        .RWE(RWE)
+        .RWE(RWE),
+        .Dmem_WE(Dmem_WE),
+        .mem_to_reg(mem_to_reg)
     );
 
     wire [31:0] ctrl_in;
@@ -150,6 +152,8 @@ module processor(
     assign ctrl_in[21:17] = aluop_out;
     assign ctrl_in[16] = aluInB;
     assign ctrl_in[15] = RWE;
+    assign ctrl_in[14] = Dmem_WE;
+    assign ctrl_in[13] = mem_to_reg;
     // TODO: implement control signals for the rest of the control unit
     assign ctrl_in[14:0] = 15'd0;
 
@@ -246,7 +250,7 @@ module processor(
         .data_in(ALUout),
         .clk(clock),
         .en(1'b1),
-        .clr(reset)
+        .clr(reset) 
     );
     latch B_XM_LATCH(
         .data_out(B_XM),
@@ -274,6 +278,14 @@ module processor(
     /* #                Memory Access (MA) Stage                   # */
     /* ############################################################# */
     // TODO: need to implement memory access stage
+    // RAM access
+
+    wire [31:0] dmem_out;
+    assign address_dmem = O_XM;
+    assign data = B_XM;
+    assign wren = CONTROL_XM[14];
+    assign dmem_out = q_dmem
+
 
     /* ------------------------------------------------------------- */
     /* |                           MW Latch                        | */
@@ -288,7 +300,7 @@ module processor(
     );
     latch D_MW_LATCH(
         .data_out(D_MW),
-        .data_in(32'b0), // FIXME: need to implement memory access
+        .data_in(dmem_out),
         .clk(clock),
         .en(1'b1),
         .clr(reset)
@@ -311,7 +323,7 @@ module processor(
     /* ############################################################# */
     /* #                Write Back (WB) Stage                      # */
     /* ############################################################# */
-    assign data_writeReg = O_MW;
+    assign data_writeReg = CONTROL_MW[13] ? O_MW : D_MW;
     assign ctrl_writeEnable = CONTROL_MW[15];
     assign ctrl_writeReg = CONTROL_MW[31:27];
 

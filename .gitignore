@@ -12,9 +12,5 @@ tml_Reports/
 *.log
 ```
 
-# ignore .venv folder
-.venv/
-output/
-
-# ignore .DS_Store file
+# Ignore .DS_Store files
 .DS_Store
