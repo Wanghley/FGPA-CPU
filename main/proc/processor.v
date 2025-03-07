@@ -235,8 +235,8 @@ module processor(
     assign ctrl_in[6:0] = 6'd0;
 
     // pass arguments to my registerfile in the wrapper module
-    assign ctrl_readRegA = (jr || bne) ? rd : rs;
-    assign ctrl_readRegB = (regfile_readB_rt_rd) ? rd : bne? rs : rt;
+    assign ctrl_readRegA = (jr || bne ||blt) ? rd : rs;
+    assign ctrl_readRegB = (regfile_readB_rt_rd) ? rd : (bne||blt)? rs : rt;
 
     // rs and rt data come from the regfile in data_readRegA and data_readRegB
     // extend immediate value
@@ -345,7 +345,15 @@ module processor(
     assign branch_mispredicted = branch && branch_instr; // Branch was taken but predicted not taken
 
     // Branch resolution logic - choose between branch target and next sequential PC
-    wire [31:0] branch_pc = branch ? branchPC_calculated : PC_DX + 32'd1;
+    wire [31:0] pc_plus_1_ex;
+    cla nextPC_EX(
+        .S(pc_plus_1_ex),
+        .cout(),
+        .ovf(),
+        .x(PC_DX),
+        .y(32'b1)
+    );
+    wire [31:0] branch_pc = branch ? branchPC_calculated : pc_plus_1_ex;
 
 
     // Final PC selection - choose jump target if this is a jump instruction (CONTROL_DX[9])
