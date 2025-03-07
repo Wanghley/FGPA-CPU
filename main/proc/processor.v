@@ -125,9 +125,8 @@ module processor(
     );
 
     // For branches, calculate potential branch target using PC+1
-    wire [31:0] if_branch_target;
     cla branchTargetIF(
-        .S(if_branch_target),
+        .S(branch_target),
         .cout(),
         .ovf(),
         .x(PCplus1),   // Use PC+1 as base
