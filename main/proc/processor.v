@@ -112,9 +112,9 @@ module processor(
     wire [4:0] if_rt = q_imem[21:17];
 
     // Identify branch instructions
-    wire if_is_bne = (if_opcode == 5'b00010); 
-    wire if_is_blt = (if_opcode == 5'b00110);
-    wire if_is_branch = if_is_bne || if_is_blt;
+    wire if_is_bne = (if_opcode == 5'b00010); // branch not equal
+    wire if_is_blt = (if_opcode == 5'b00110); // branch less than
+    wire if_is_bex = (if_opcode == 5'b10110); // branch exception
 
     // Sign-extend the target/immediate field for jump addresses
     wire [31:0] if_jump_target;
@@ -140,16 +140,21 @@ module processor(
               is_jump ? if_jump_target :    // For jumps, use target directly 
               PCnext;                  // For normal execution or not-taken branches
 
-    wire branch_hazard = if_is_branch && (
-                    (CONTROL_DX[31:27] == if_rs || CONTROL_DX[31:27] == if_rt) || // RAW hazard with ID stage
-                    (CONTROL_XM[31:27] == if_rs || CONTROL_XM[31:27] == if_rt) // RAW hazard with EX stage
-                    );
+    wire reg_dependency_hazard = 
+                (CONTROL_DX[31:27] == if_rs || CONTROL_DX[31:27] == if_rt) || // RAW hazard with ID stage
+                (CONTROL_XM[31:27] == if_rs || CONTROL_XM[31:27] == if_rt);  // RAW hazard with EX stage
 
+    // Only stall for BNE/BLT that have register dependencies, not for BEX
+    wire branch_hazard = (if_is_bne || if_is_blt) && reg_dependency_hazard;
+
+    // BEX only depends on $30, which is accessed directly
+    wire bex_hazard = if_is_bex && 
+                    ((CONTROL_DX[31:27] == 5'd30) || (CONTROL_XM[31:27] == 5'd30));
     // -------------------------------------------------------------
     // |                    Stall Logic                           |
     // -------------------------------------------------------------
     // Simplified stall logic - only stall on unresolved branches
-    assign pc_stall = branch_hazard;
+    assign pc_stall = branch_hazard || bex_hazard;
 
     /* ------------------------------------------------------------- */
     /* |                           FD Latch                        | */
@@ -230,11 +235,12 @@ module processor(
     assign ctrl_in[9] = jp;
     assign ctrl_in[8] = jal;
     assign ctrl_in[7] = jr;
+    assign ctrl_in[6] = (opcode == 5'b10110 && data_readRegA != 32'd0) ? 1'b1 : 1'b0; // BEX instruction
     // TODO: implement control signals for the rest of the control unit
     assign ctrl_in[6:0] = 6'd0;
 
     // pass arguments to my registerfile in the wrapper module
-    assign ctrl_readRegA = (jr || bne ||blt) ? rd : rs;
+    assign ctrl_readRegA = (jr || bne ||blt) ? rd : (opcode == 5'b10110)? 5'd30 : rs;
     assign ctrl_readRegB = (regfile_readB_rt_rd) ? rd : (bne||blt)? rs : rt;
 
     // rs and rt data come from the regfile in data_readRegA and data_readRegB
@@ -246,10 +252,19 @@ module processor(
         .shamt(5'd15) // 15 bit shift
     );
 
+    // BEX instruction - exception handling
+    // For BEX, we need to set the PC to the exception handler address
+    wire [31:0] bex_target;
+    sra BEX_IMMEXT(
+        .out(bex_target),
+        .x({target, 5'b0}),
+        .shamt(5'd5) // 5 bit shift
+    );
+
     /* ------------------------------------------------------------- */
     /* |                           DX Latch                        | */
     /* ------------------------------------------------------------- */
-    wire [31:0] IR_DX, PC_DX, CONTROL_DX;
+    wire [31:0] IR_DX, PC_DX, CONTROL_DX, TARGET_BEX_DX;
     wire [31:0] A_DX, B_DX, imm_DX, shamt_DX, aluop_DX;
     latch PC_DX_LATCH(
         .data_out(PC_DX),
@@ -293,6 +308,13 @@ module processor(
         .en(1'b1),
         .clr(reset)
     );
+    latch BEX_TARGET_LATCH(
+        .data_out(TARGET_BEX_DX),
+        .data_in(bex_target),
+        .clk(clock),
+        .en(1'b1),
+        .clr(reset)
+    );
     /* ------------------------------------------------------------- */
     /* ############################################################# */
     /* #                Execute (EX) Stage                         # */
@@ -325,8 +347,9 @@ module processor(
     wire bne_instr = CONTROL_DX[12]; // BNE control signal
     wire blt_instr = CONTROL_DX[11]; // BLT control signal
     wire branch_instr = CONTROL_DX[10]; // Branch instruction indicator
+    wire is_bex_taken = (IR_DX[31:27] == 5'b10110) && CONTROL_DX[6];
 
-    wire branch_condition_met = (ne_ALU & bne_instr) || (lessThan_ALU & blt_instr);
+    wire branch_condition_met = (ne_ALU & bne_instr) || (lessThan_ALU & blt_instr) || is_bex_taken;
     wire branch = branch_condition_met && branch_instr;
 
     // Calculate branch target - this is the correct target address if branch is taken
@@ -341,7 +364,7 @@ module processor(
 
     // Branch misprediction detection
     // Since we use static not-taken prediction, a misprediction occurs when branch is actually taken
-    assign branch_mispredicted = branch && branch_instr; // Branch was taken but predicted not taken
+    assign branch_mispredicted = branch; // Branch was taken but predicted not taken
 
     // Branch resolution logic - choose between branch target and next sequential PC
     wire [31:0] pc_plus_1_ex;
@@ -352,7 +375,9 @@ module processor(
         .x(PC_DX),
         .y(32'b1)
     );
-    wire [31:0] branch_pc = branch ? branchPC_calculated : pc_plus_1_ex;
+    wire [31:0] branch_pc = branch ? 
+             ((IR_DX[31:27] == 5'b10110) ? TARGET_BEX_DX : branchPC_calculated) 
+             : pc_plus_1_ex;
 
 
     // Final PC selection - choose jump target if this is a jump instruction (CONTROL_DX[9])
