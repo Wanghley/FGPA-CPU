@@ -35,7 +35,7 @@ assign regfile_readB_rt_rd = (opcode == 5'b00111 || opcode == 5'b01000) ? 1'b1 :
 // branches signaling
 assign bne = (opcode == 5'b00010) ? 1'b1 : 1'b0;
 assign blt = (opcode == 5'b00110) ? 1'b1 : 1'b0;
-assign br = (opcode == 5'b00010 || opcode == 5'b00110) ? 1'b1 : 1'b0;
+assign br = (opcode == 5'b00010 || opcode == 5'b00110 || opcode == 5'b10110) ? 1'b1 : 1'b0;
 
 // jump signaling
 assign jp = (opcode == 5'b00001) ? 1'b1 : 1'b0;
