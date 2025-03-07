@@ -72,14 +72,13 @@ module processor(
         .data_out(PCout),
         .data_in(PCin),
         .clk(clock),
-        .en(~pc_stall), // FIXME: need to buildup logic for this signal with branch and jump instructions
+        .en(~pc_stall), 
         .clr(reset)
     );
 
     // calculate next PC
     wire [31:0] PCnext;
     wire [31:0] branch_target; // Target address for branches
-    wire branch_taken;         // Branch prediction signal
     wire is_jump;              // Jump detection signal
 
     cla nextPC(
@@ -93,54 +92,45 @@ module processor(
     assign address_imem = PCout;
 
     // -------------------------------------------------------------
-    // Branch and Jump Detection Logic
-    // This section implements branch prediction and control flow handling
-    // We detect jumps early in the IF stage and handle branch prediction
+    // Improved Jump Detection and Target Logic
     // -------------------------------------------------------------
 
-    // Extract opcode from instruction to identify control flow instructions
+    // Extract opcode and target from instruction
     wire [4:0] if_opcode = q_imem[31:27];
-    assign is_jump = (if_opcode == 5'b00001) || (if_opcode == 5'b00011); // j or jal
+    wire [26:0] if_target = q_imem[26:0];
+
+    // Identify jump instructions more clearly
+    wire is_j = (if_opcode == 5'b00001);   // j instruction
+    wire is_jal = (if_opcode == 5'b00011); // jal instruction
+    assign is_jump = is_j || is_jal;       // Any unconditional jump
     wire is_branch = (if_opcode == 5'b00010) || (if_opcode == 5'b00110); // bne or blt
 
-    // Sign-extend immediate field from instruction for branch/jump targets
-    wire [31:0] if_imm_ext;
+    // Sign-extend the target/immediate field for jump addresses
+    wire [31:0] if_jump_target;
     sra IF_IMMEXT(
-        .out(if_imm_ext),
-        .x({q_imem[16:0], 15'b0}),
-        .shamt(5'd15) // 15 bit shift
+        .out(if_jump_target),
+        .x({if_target[16:0], 15'b0}), // Only use the immediate portion for jump target
+        .shamt(5'd15)                 // 15 bit shift
     );
 
-    // Calculate potential branch target address using PC+1 as base
+    // For branches, calculate potential branch target using PC+1
     cla branchPCIF(
         .S(branch_target),
         .cout(),
         .ovf(),
-        .x(PCnext), // Use PC+1 as base
-        .y(if_imm_ext)
+        .x(PCnext),        // Use PC+1 as base
+        .y(if_jump_target) // Add the offset
     );
 
-    // Simple static branch prediction - always predict branches not taken
-    // Could be enhanced to dynamic prediction in future iterations
-    assign branch_taken = 1'b0;
-
-    // Branch misprediction detection from EX stage
-    // If branch condition evaluates true in EX, we have a mispredict
-    wire branch_mispredict = branch; // Branch signal comes from EX stage evaluation
-
-    // PC input selection logic with priority:
-    // 1. Correcting mispredicted branches (highest priority)
-    // 2. Jump instructions (unconditional control flow)
-    // 3. Predicted taken branches (not currently used with static prediction)
-    // 4. Normal sequential execution (PC+1)
+    // PC input selection logic
+    // For jumps, use the jump target directly
+    // For normal execution, use PC+1
     assign PCin = ctrl_flow_change ? jump_pc : 
-                is_jump ? if_imm_ext :
-                branch_taken ? branch_target : 
+                is_jump ? if_jump_target : 
                 PCnext;
 
-    // Stall PC when a branch is detected but not yet resolved
-    // This prevents fetching instructions that might be discarded
-    assign pc_stall = is_branch && !branch_mispredict; // Stall on unresolved branches
+    // Simplified stall logic - only stall on unresolved branches
+    assign pc_stall = is_branch && !branch;
 
     /* ------------------------------------------------------------- */
     /* |                           FD Latch                        | */
@@ -344,9 +334,6 @@ module processor(
 
     // Control flow change signal - true when any jump or taken branch should redirect the PC
     wire ctrl_flow_change = is_jump_ex || branch;
-
-
-
 
     /* ------------------------------------------------------------- */
     /* |                           XM Latch                        | */
