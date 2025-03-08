@@ -155,6 +155,8 @@ module processor(
     // -------------------------------------------------------------
     // Simplified stall logic - only stall on unresolved branches
     assign pc_stall = branch_hazard || bex_hazard;
+    wire fd_stall = 1'b0; // No stalls in IF stage
+    wire dx_stall = 1'b0; // Stall in DX stage if PC is stalled
 
     /* ------------------------------------------------------------- */
     /* |                           FD Latch                        | */
@@ -237,7 +239,7 @@ module processor(
     assign ctrl_in[7] = jr;
     assign ctrl_in[6] = (opcode == 5'b10110 && data_readRegA != 32'd0) ? 1'b1 : 1'b0; // BEX instruction
     // TODO: implement control signals for the rest of the control unit
-    assign ctrl_in[6:0] = 6'd0;
+    assign ctrl_in[5:0] = 6'd0;
 
     // pass arguments to my registerfile in the wrapper module
     assign ctrl_readRegA = (jr || bne ||blt) ? rd : (opcode == 5'b10110)? 5'd30 : rs;
@@ -252,8 +254,8 @@ module processor(
         .shamt(5'd15) // 15 bit shift
     );
 
-    // BEX instruction - exception handling
-    // For BEX, we need to set the PC to the exception handler address
+    // // BEX instruction - exception handling
+    // // For BEX, we need to set the PC to the exception handler address
     wire [31:0] bex_target;
     sra BEX_IMMEXT(
         .out(bex_target),
@@ -264,7 +266,7 @@ module processor(
     /* ------------------------------------------------------------- */
     /* |                           DX Latch                        | */
     /* ------------------------------------------------------------- */
-    wire [31:0] IR_DX, PC_DX, CONTROL_DX, TARGET_BEX_DX;
+    wire [31:0] IR_DX, PC_DX, CONTROL_DX, TARGET_DX;
     wire [31:0] A_DX, B_DX, imm_DX, shamt_DX, aluop_DX;
     latch PC_DX_LATCH(
         .data_out(PC_DX),
@@ -308,8 +310,8 @@ module processor(
         .en(1'b1),
         .clr(reset)
     );
-    latch BEX_TARGET_LATCH(
-        .data_out(TARGET_BEX_DX),
+    latch TARGET_LATCH(
+        .data_out(TARGET_DX),
         .data_in(bex_target),
         .clk(clock),
         .en(1'b1),
@@ -322,23 +324,83 @@ module processor(
     // immediate value sign extension
     wire [31:0] data_ALUInB;
     wire aluInB_ctrl = CONTROL_DX[16];
-    wire [4:0] alu_op_ctrl = CONTROL_DX[21:17];
+    wire [4:0] op_ctrl_dx = CONTROL_DX[21:17];
     wire [4:0] shamt_alu_ctrl = CONTROL_DX[26:22];
     assign data_ALUInB = (aluInB_ctrl) ? imm_DX : B_DX;
     
-    // ALU
+    // -------------------------------------------------------------
+    // |                    ALU Logic                              |
+    // -------------------------------------------------------------
     wire [31:0] ALUout;
     wire ne_ALU, lessThan_ALU, overflow_ALU; // flags for not equality, less than, overflow
     alu ALU(
         .data_operandA(A_DX),
         .data_operandB(data_ALUInB),
-        .ctrl_ALUopcode(alu_op_ctrl),
+        .ctrl_ALUopcode(op_ctrl_dx),
         .data_result(ALUout),
         .ctrl_shiftamt(shamt_alu_ctrl),
         .isNotEqual(ne_ALU),
         .isLessThan(lessThan_ALU),
-        .overflow()
+        .overflow(overflow_ALU)
     );
+
+    // -------------------------------------------------------------
+    // |                    Multiplication and Division            |
+    // -------------------------------------------------------------
+    //data_operandA, data_operandB, ctrl_MULT, ctrl_DIV, clock, data_result, data_exception, data_resultRDY
+    wire ctrl_multidiv_datardy, multidiv_exception, ctrl_MULT, ctrl_DIV;
+    multdiv MULTIDIV(
+        .data_operandA(A_DX),
+        .data_operandB(B_DX),
+        .ctrl_MULT(ctrl_MULT), // signal to start multiplication
+        .ctrl_DIV(), // signal to start division
+        .clock(clock),
+        .data_exception(multidiv_exception),
+        .data_result(),
+        .data_resultRDY(ctrl_multidiv_datardy)
+    );
+
+    // process opcode for MULT and DIV
+    wire is_mult = (op_ctrl_dx == 5'b00110);
+    wire is_div = (op_ctrl_dx == 5'b00111);
+
+    // MULT and DIV signals
+    wire dff_mult_ctrl_int_dx;
+    wire not_dff_mult_ctrl_int_dx = ~dff_mult_ctrl_int_dx;
+    assign ctrl_MULT = is_mult & not_dff_mult_ctrl_int_dx;
+    wire dff_mult_ctrl_int_dx2;
+    dffe_ref MULT_CTRL_1(
+        .q(dff_mult_ctrl_int_dx),
+        .d(is_mult),
+        .clk(clock),
+        .en(1'b1),
+        .clr(dff_mult_ctrl_int_dx2)
+    );
+    dffe_ref MULT_CTRL_2(
+        .q(dff_mult_ctrl_int_dx2),
+        .d(ctrl_multidiv_datardy),
+        .clk(clock),
+        .en(1'b1),
+        .clr(reset)
+    );
+    
+   
+
+    // -------------------------------------------------------------
+    // |                    exception detection                    |
+    // -------------------------------------------------------------
+    wire [31:0] exception;
+    // TODO: implement exception detection for multidiv
+    exception EXC(
+        .opcode(IR_DX[31:27]),
+        .aluop(op_ctrl_dx),
+        .alu_ovf(overflow_ALU),
+        .exception(exception),
+        .multidiv_exception(multidiv_exception)
+    );
+
+
+
 
     // -------------------------------------------------------------
     // |                    Branch and Jump Logic                  |
@@ -376,7 +438,7 @@ module processor(
         .y(32'b1)
     );
     wire [31:0] branch_pc = branch ? 
-             ((IR_DX[31:27] == 5'b10110) ? TARGET_BEX_DX : branchPC_calculated) 
+             ((IR_DX[31:27] == 5'b10110) ? TARGET_DX : branchPC_calculated) 
              : pc_plus_1_ex;
 
 
@@ -396,10 +458,10 @@ module processor(
     /* ------------------------------------------------------------- */
     /* |                           XM Latch                        | */
     /* ------------------------------------------------------------- */
-    wire [31:0] O_XM, B_XM, IR_XM, CONTROL_XM;
+    wire [31:0] O_XM, B_XM, IR_XM, CONTROL_XM, TARGET_XM;
     latch O_XM_LATCH(
         .data_out(O_XM),
-        .data_in(CONTROL_DX[8] ? PC_DX : ALUout),
+        .data_in(CONTROL_DX[8] ? PC_DX : (exception==32'd0) ? ALUout : exception),
         .clk(clock),
         .en(1'b1),
         .clr(reset) 
@@ -420,7 +482,14 @@ module processor(
     );
     latch CONTROL_XM_LATCH(
         .data_out(CONTROL_XM),
-        .data_in(CONTROL_DX),
+        .data_in((exception==32'd0) ? CONTROL_DX : {5'd30, CONTROL_DX[26:17], 1'b1, CONTROL_DX[15:0]}),
+        .clk(clock),
+        .en(1'b1),
+        .clr(reset)
+    );
+    latch TARGET_XM_LATCH(
+        .data_out(TARGET_XM),
+        .data_in(TARGET_DX),
         .clk(clock),
         .en(1'b1),
         .clr(reset)
@@ -442,7 +511,7 @@ module processor(
     /* ------------------------------------------------------------- */
     /* |                           MW Latch                        | */
     /* ------------------------------------------------------------- */
-    wire [31:0] O_MW, D_MW, IR_MW, CONTROL_MW;
+    wire [31:0] O_MW, D_MW, IR_MW, CONTROL_MW, TARGET_MW;
     latch O_MW_LATCH(
         .data_out(O_MW),
         .data_in(O_XM),
@@ -471,6 +540,13 @@ module processor(
         .en(1'b1),
         .clr(reset)
     );
+    latch TARGET_MW_LATCH(
+        .data_out(TARGET_MW),
+        .data_in(TARGET_XM),
+        .clk(clock),
+        .en(1'b1),
+        .clr(reset)
+    );
 
     /* ------------------------------------------------------------- */
     /* ############################################################# */
@@ -478,10 +554,10 @@ module processor(
     /* ############################################################# */
 
     // Decide which register to write to
-    wire [31:0] regWrite = (IR_MW[31:27]==5'b00011) ? 32'd31 : CONTROL_MW[31:27];
+    wire [31:0] regWrite = (IR_MW[31:27]==5'b00011) ? 32'd31 : (IR_MW[31:27]==5'b10101) ? 32'd30 : CONTROL_MW[31:27];
 
-    assign data_writeReg = (CONTROL_MW[13]) ? D_MW : O_MW;
-    assign ctrl_writeEnable = CONTROL_MW[15];
+    assign data_writeReg = (CONTROL_MW[13]) ? D_MW : (IR_MW[31:27]==5'b10101) ? TARGET_MW : O_MW;
+    assign ctrl_writeEnable = CONTROL_MW[15] || (IR_MW[31:27]==5'b10101);
     assign ctrl_writeReg = regWrite;
 
 	
