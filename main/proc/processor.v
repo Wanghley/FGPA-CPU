@@ -154,9 +154,9 @@ module processor(
     // |                    Stall Logic                           |
     // -------------------------------------------------------------
     // Simplified stall logic - only stall on unresolved branches
-    assign pc_stall = branch_hazard || bex_hazard;
-    wire fd_stall = 1'b0; // No stalls in IF stage
-    wire dx_stall = 1'b0; // Stall in DX stage if PC is stalled
+    assign pc_stall = branch_hazard || bex_hazard || multdiv_hazard;
+    wire fd_stall = multdiv_hazard;
+    wire dx_stall = multdiv_hazard;
 
     /* ------------------------------------------------------------- */
     /* |                           FD Latch                        | */
@@ -166,14 +166,14 @@ module processor(
         .data_out(PC_FD),
         .data_in(PCnext),
         .clk(clock),
-        .en(1'b1),
+        .en(~fd_stall),
         .clr(reset)
     );
     latch IR_FD_LATCH(
         .data_out(IR_FD),
         .data_in(q_imem),
         .clk(clock),
-        .en(1'b1),
+        .en(~fd_stall),
         .clr(reset)
     );
     /* ------------------------------------------------------------- */
@@ -272,49 +272,49 @@ module processor(
         .data_out(PC_DX),
         .data_in(PC_FD),
         .clk(clock),
-        .en(1'b1),
+        .en(~dx_stall),
         .clr(reset)
     );
     latch IR_DX_LATCH(
         .data_out(IR_DX),
         .data_in(IR_FD),
         .clk(clock),
-        .en(1'b1),
+        .en(~dx_stall),
         .clr(reset)
     );
     latch A_DX_LATCH(
         .data_out(A_DX),
         .data_in(data_readRegA),
         .clk(clock),
-        .en(1'b1),
+        .en(~dx_stall),
         .clr(reset)
     );
     latch B_DX_LATCH(
         .data_out(B_DX),
         .data_in(data_readRegB),
         .clk(clock),
-        .en(1'b1),
+        .en(~dx_stall),
         .clr(reset)
     );
     latch IMM_DX_LATCH(
         .data_out(imm_DX),
         .data_in(imm_ext),
         .clk(clock),
-        .en(1'b1),
+        .en(~dx_stall),
         .clr(reset)
     );
     latch CONTROL_DX_LATCH(
         .data_out(CONTROL_DX),
         .data_in(ctrl_in),
         .clk(clock),
-        .en(1'b1),
+        .en(~dx_stall),
         .clr(reset)
     );
     latch TARGET_LATCH(
         .data_out(TARGET_DX),
         .data_in(bex_target),
         .clk(clock),
-        .en(1'b1),
+        .en(~dx_stall),
         .clr(reset)
     );
     /* ------------------------------------------------------------- */
@@ -347,24 +347,27 @@ module processor(
     // -------------------------------------------------------------
     // |                    Multiplication and Division            |
     // -------------------------------------------------------------
+    // TODO: implement multiplication and division logic
     //data_operandA, data_operandB, ctrl_MULT, ctrl_DIV, clock, data_result, data_exception, data_resultRDY
-    wire ctrl_multidiv_datardy, multidiv_exception, ctrl_MULT, ctrl_DIV;
+    wire ctrl_multidiv_datardy, multidiv_exception_int_dx, ctrl_MULT, ctrl_DIV;
     multdiv MULTIDIV(
         .data_operandA(A_DX),
         .data_operandB(B_DX),
         .ctrl_MULT(ctrl_MULT), // signal to start multiplication
-        .ctrl_DIV(), // signal to start division
+        .ctrl_DIV(ctrl_DIV), // signal to start division
         .clock(clock),
-        .data_exception(multidiv_exception),
+        .data_exception(multidiv_exception_int_dx),
         .data_result(),
         .data_resultRDY(ctrl_multidiv_datardy)
     );
 
     // process opcode for MULT and DIV
-    wire is_mult = (op_ctrl_dx == 5'b00110);
-    wire is_div = (op_ctrl_dx == 5'b00111);
+    wire is_mult = (op_ctrl_dx == 5'b00110) && IR_DX[31:27] == 5'b00000;
+    wire is_div = (op_ctrl_dx == 5'b00111) && IR_DX[31:27] == 5'b00000;
 
-    // MULT and DIV signals
+    wire multdiv_hazard = (is_mult || is_div) && ~ctrl_multidiv_datardy;
+
+    // MULT signals
     wire dff_mult_ctrl_int_dx;
     wire not_dff_mult_ctrl_int_dx = ~dff_mult_ctrl_int_dx;
     assign ctrl_MULT = is_mult & not_dff_mult_ctrl_int_dx;
@@ -383,6 +386,27 @@ module processor(
         .en(1'b1),
         .clr(reset)
     );
+    // DIV signals
+    wire dff_div_ctrl_int_dx;
+    wire not_dff_div_ctrl_int_dx = ~dff_div_ctrl_int_dx;
+    assign ctrl_DIV = is_div & not_dff_div_ctrl_int_dx;
+    wire dff_div_ctrl_int_dx2;
+    dffe_ref DIV_CTRL_1(
+        .q(dff_div_ctrl_int_dx),
+        .d(is_div),
+        .clk(clock),
+        .en(1'b1),
+        .clr(dff_div_ctrl_int_dx2)
+    );
+    dffe_ref DIV_CTRL_2(
+        .q(dff_div_ctrl_int_dx2),
+        .d(ctrl_multidiv_datardy),
+        .clk(clock),
+        .en(1'b1),
+        .clr(reset)
+    );
+
+    wire multdiv_excp_dex = multidiv_exception_int_dx && ctrl_multidiv_datardy;
     
    
 
@@ -390,13 +414,12 @@ module processor(
     // |                    exception detection                    |
     // -------------------------------------------------------------
     wire [31:0] exception;
-    // TODO: implement exception detection for multidiv
     exception EXC(
         .opcode(IR_DX[31:27]),
-        .aluop(op_ctrl_dx),
+        .dx_opcode(op_ctrl_dx),
         .alu_ovf(overflow_ALU),
-        .exception(exception),
-        .multidiv_exception(multidiv_exception)
+        .multidiv_exception(multdiv_excp_dex),
+        .exception(exception)
     );
 
 
