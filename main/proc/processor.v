@@ -350,6 +350,7 @@ module processor(
     // TODO: implement multiplication and division logic
     //data_operandA, data_operandB, ctrl_MULT, ctrl_DIV, clock, data_result, data_exception, data_resultRDY
     wire ctrl_multidiv_datardy, multidiv_exception_int_dx, ctrl_MULT, ctrl_DIV;
+    wire [31:0] multdiv_result;
     multdiv MULTIDIV(
         .data_operandA(A_DX),
         .data_operandB(B_DX),
@@ -357,7 +358,7 @@ module processor(
         .ctrl_DIV(ctrl_DIV), // signal to start division
         .clock(clock),
         .data_exception(multidiv_exception_int_dx),
-        .data_result(),
+        .data_result(multdiv_result),
         .data_resultRDY(ctrl_multidiv_datardy)
     );
 
@@ -422,9 +423,6 @@ module processor(
         .exception(exception)
     );
 
-
-
-
     // -------------------------------------------------------------
     // |                    Branch and Jump Logic                  |
     // -------------------------------------------------------------
@@ -484,7 +482,7 @@ module processor(
     wire [31:0] O_XM, B_XM, IR_XM, CONTROL_XM, TARGET_XM;
     latch O_XM_LATCH(
         .data_out(O_XM),
-        .data_in(CONTROL_DX[8] ? PC_DX : (exception==32'd0) ? ALUout : exception),
+        .data_in(CONTROL_DX[8] ? PC_DX : (exception==32'd0) ? (is_mult || is_div) && ctrl_multidiv_datardy ? multdiv_result : ALUout : exception),
         .clk(clock),
         .en(1'b1),
         .clr(reset) 
