@@ -1,7 +1,7 @@
-module stall(ctrl_dx, ir_dx, ctrl_fd, ir_fd, stall);
-    input [31:0] ctrl_dx, ir_dx, ctrl_fd, ir_fd;
+module stall(ctrl_dx, ir_dx, ir_fd, stall);
+    input [31:0] ctrl_dx, ir_dx, ir_fd;
     output stall;
-    wire [4:0] opcode_dx, opcode_fd, rt_dx, rt_fd;
+    wire [4:0] opcode_dx, opcode_fd, rt_dx, rt_fd, rs_fd;
     instrdecoder decoder_dx (
         .instruction(ir_dx),
         .opcode(opcode_dx),
@@ -10,9 +10,16 @@ module stall(ctrl_dx, ir_dx, ctrl_fd, ir_fd, stall);
     instrdecoder decoder_fd (
         .instruction(ir_fd),
         .opcode(opcode_fd),
-        .rt(rt_fd)
+        .rt(rt_fd),
+        .rs(rs_fd)
     );
-    assign stall = (opcode_dx==5'b01000) && 
-                    ((ctrl_fd[5:1] == ctrl_dx[31:27]) ||
-                    (rt_fd == ctrl_dx[31:27]) && (opcode_fd!=5'b00111));
+
+    // DEBUG WIRES - REMOVE IN FINAL VERSION
+    wire [4:0] rd_dx;
+    assign rd_dx = ctrl_dx[31:27];
+
+    assign stall = (opcode_dx == 5'b01000) && 
+                   ((rs_fd == ctrl_dx[31:27]) ||
+                    (rs_fd == ctrl_dx[31:27]) ||
+                    (rt_fd == ctrl_dx[31:27]) && (opcode_fd != 5'b00111));
 endmodule

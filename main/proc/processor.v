@@ -166,16 +166,13 @@ module processor(
     stall STALL(
         .ctrl_dx(CONTROL_DX),
         .ir_dx(IR_DX),
-        .ctrl_fd(CONTROL_DX),
-        .ir_fd(IR_DX),
+        .ir_fd(IR_FD),
         .stall(stall_signal)
     );
 
     assign pc_stall = branch_hazard || bex_hazard || multdiv_hazard || stall_signal;
     wire fd_stall = multdiv_hazard || stall_signal;
     wire dx_stall = multdiv_hazard;
-
-    // TODO: implement nop stall logic here
 
     // -------------------------------------------------------------
     // |                    Bypassing Logic                        |
@@ -307,49 +304,49 @@ module processor(
     wire [31:0] imm_DX, shamt_DX, aluop_DX;
     latch PC_DX_LATCH(
         .data_out(PC_DX),
-        .data_in(PC_FD),
+        .data_in(stall_signal? 32'd0:PC_FD),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
     );
     latch IR_DX_LATCH(
         .data_out(IR_DX),
-        .data_in(IR_FD),
+        .data_in(stall_signal? 32'd0:IR_FD),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
     );
     latch A_DX_LATCH(
         .data_out(A_DX),
-        .data_in(data_readRegA),
+        .data_in(stall_signal? 32'd0:data_readRegA),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
     );
     latch B_DX_LATCH(
         .data_out(B_DX),
-        .data_in(data_readRegB),
+        .data_in(stall_signal? 32'd0:data_readRegB),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
     );
     latch IMM_DX_LATCH(
         .data_out(imm_DX),
-        .data_in(imm_ext),
+        .data_in(stall_signal? 32'd0:imm_ext),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
     );
     latch CONTROL_DX_LATCH(
         .data_out(CONTROL_DX),
-        .data_in(ctrl_in),
+        .data_in(stall_signal? 32'd0:ctrl_in),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
     );
     latch TARGET_LATCH(
         .data_out(TARGET_DX),
-        .data_in(bex_target),
+        .data_in(stall_signal? 32'd0:bex_target),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
