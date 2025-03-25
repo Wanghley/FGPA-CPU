@@ -168,6 +168,7 @@ module processor(
     // -------------------------------------------------------------
     wire [1:0] byp_selALU_A, byp_selALU_B; // ALU A and B bypass selectors
     wire [31:0] DXB, XMB,MWB,FDB; // bypassed data from DX, XM, MW, and WB stages
+    wire byp_selMem_data; // Memory data bypass selector
 
     bypass BYP(
         .ctrl_xm(CONTROL_XM),
@@ -177,7 +178,8 @@ module processor(
         .byp_selALU_B(byp_selALU_B),
         .IR_DX(IR_DX),
         .IR_MW(IR_MW),
-        .IR_XM(IR_XM)
+        .IR_XM(IR_XM),
+        .byp_selMem_data(byp_selMem_data)
     );
 
 
@@ -572,7 +574,7 @@ module processor(
 
     wire [31:0] dmem_out;
     assign address_dmem = O_XM;
-    assign data = B_XM;
+    assign data = byp_selMem_data==1'b0 ? MWB : B_XM;
     assign wren = CONTROL_XM[14];
     assign dmem_out = q_dmem;
 
