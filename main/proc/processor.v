@@ -159,9 +159,23 @@ module processor(
     // |                    Stall Logic                           |
     // -------------------------------------------------------------
     // Simplified stall logic - only stall on unresolved branches
-    assign pc_stall = branch_hazard || bex_hazard || multdiv_hazard;
-    wire fd_stall = multdiv_hazard;
+
+    // Stall signals for each stage
+    wire stall_signal;
+    wire [31:0] nop = 32'd0;
+    stall STALL(
+        .ctrl_dx(CONTROL_DX),
+        .ir_dx(IR_DX),
+        .ctrl_fd(CONTROL_DX),
+        .ir_fd(IR_DX),
+        .stall(stall_signal)
+    );
+
+    assign pc_stall = branch_hazard || bex_hazard || multdiv_hazard || stall_signal;
+    wire fd_stall = multdiv_hazard || stall_signal;
     wire dx_stall = multdiv_hazard;
+
+    // TODO: implement nop stall logic here
 
     // -------------------------------------------------------------
     // |                    Bypassing Logic                        |
@@ -401,8 +415,8 @@ module processor(
     wire ctrl_multidiv_datardy, multidiv_exception_int_dx, ctrl_MULT, ctrl_DIV;
     wire [31:0] multdiv_result;
     multdiv MULTIDIV(
-        .data_operandA(A_DX),
-        .data_operandB(B_DX),
+        .data_operandA(ALUinA),
+        .data_operandB(ALUInB),
         .ctrl_MULT(ctrl_MULT), // signal to start multiplication
         .ctrl_DIV(ctrl_DIV), // signal to start division
         .clock(clock),
@@ -553,7 +567,7 @@ module processor(
     );
     latch CONTROL_XM_LATCH(
         .data_out(CONTROL_XM),
-        .data_in((exception==32'd0) ? CONTROL_DX : {5'd30, CONTROL_DX[26:17], 1'b1, CONTROL_DX[15:0]}),
+        .data_in((exception==32'd0) ? CONTROL_DX : CONTROL_DX),
         .clk(clock),
         .en(1'b1),
         .clr(reset)
