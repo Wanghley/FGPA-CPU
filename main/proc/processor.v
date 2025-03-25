@@ -61,6 +61,13 @@ module processor(
 	output [31:0] data_writeReg;
 	input [31:0] data_readRegA, data_readRegB;
 
+    // Latches
+    wire [31:0] IR_FD, IR_DX, IR_MW, IR_XM;
+    wire [31:0] PC_FD, PC_DX, PC_MW, PC_XM;
+    wire [31:0] A_DX, B_DX, A_MW, B_MW, A_XM, B_XM;
+    wire [31:0] TARGET_DX, TARGET_MW, TARGET_XM;
+    wire [31:0] CONTROL_DX, CONTROL_MW, CONTROL_XM;
+
 	/* ############################################################# */
     /* #                Instruction Fetch (IF) Stage               # */
     /* ############################################################# */
@@ -136,9 +143,7 @@ module processor(
     // PC input selection logic
     // For jumps, use the jump target directly
     // For normal execution, use PC+1
-    assign PCin = ctrl_flow_change ? jump_pc : 
-              is_jump ? if_jump_target :    // For jumps, use target directly 
-              PCnext;                  // For normal execution or not-taken branches
+    assign PCin = ctrl_flow_change ? jump_pc : PCnext;
 
     wire reg_dependency_hazard = 
                 (CONTROL_DX[31:27] == if_rs || CONTROL_DX[31:27] == if_rt) || // RAW hazard with ID stage
@@ -161,14 +166,24 @@ module processor(
     // -------------------------------------------------------------
     // |                    Bypassing Logic                        |
     // -------------------------------------------------------------
-    wire [2:0] byp_selALU_A, byp_selALU_B; // ALU A and B bypass selectors
+    wire [1:0] byp_selALU_A, byp_selALU_B; // ALU A and B bypass selectors
     wire [31:0] DXB, XMB,MWB,FDB; // bypassed data from DX, XM, MW, and WB stages
+
+    bypass BYP(
+        .ctrl_xm(CONTROL_XM),
+        .ctrl_dx(CONTROL_DX),
+        .ctrl_mw(CONTROL_MW),
+        .byp_selALU_A(byp_selALU_A),
+        .byp_selALU_B(byp_selALU_B),
+        .IR_DX(IR_DX),
+        .IR_MW(IR_MW),
+        .IR_XM(IR_XM)
+    );
 
 
     /* ------------------------------------------------------------- */
     /* |                           FD Latch                        | */
     /* ------------------------------------------------------------- */
-    wire [31:0] IR_FD, PC_FD;
     latch PC_FD_LATCH(
         .data_out(PC_FD),
         .data_in(PCnext),
@@ -245,7 +260,8 @@ module processor(
     assign ctrl_in[8] = jal;
     assign ctrl_in[7] = jr;
     assign ctrl_in[6] = (opcode == 5'b10110 && data_readRegA != 32'd0) ? 1'b1 : 1'b0; // BEX instruction
-    assign ctrl_in[5:0] = rs;
+    assign ctrl_in[5:1] = rs;
+    assign ctrl_in[0] = 1'b0; // tobeused
 
     // pass arguments to my registerfile in the wrapper module
     assign ctrl_readRegA = (jr || bne ||blt) ? rd : (opcode == 5'b10110)? 5'd30 : rs;
@@ -272,8 +288,7 @@ module processor(
     /* ------------------------------------------------------------- */
     /* |                           DX Latch                        | */
     /* ------------------------------------------------------------- */
-    wire [31:0] IR_DX, PC_DX, CONTROL_DX, TARGET_DX;
-    wire [31:0] A_DX, B_DX, imm_DX, shamt_DX, aluop_DX;
+    wire [31:0] imm_DX, shamt_DX, aluop_DX;
     latch PC_DX_LATCH(
         .data_out(PC_DX),
         .data_in(PC_FD),
@@ -332,15 +347,41 @@ module processor(
     wire aluInB_ctrl = CONTROL_DX[16];
     wire [4:0] op_ctrl_dx = CONTROL_DX[21:17];
     wire [4:0] shamt_alu_ctrl = CONTROL_DX[26:22];
-    assign data_ALUInB = (aluInB_ctrl) ? imm_DX : B_DX;
+
     
     // -------------------------------------------------------------
     // |                    ALU Logic                              |
     // -------------------------------------------------------------
+
+    // ALU input selection
+    wire [31:0] ALUinA;
+    mux_4_1 ALU_A_MUX(
+        .out(ALUinA),
+        .select(byp_selALU_A),
+        .in0(XMB),
+        .in1(MWB),
+        .in2(A_DX),
+        .in3(A_DX)
+    );
+
+    wire[31:0] ALUInB;
+
+    mux_4_1 ALU_B_MUX(
+        .out(ALUInB),
+        .select(byp_selALU_B),
+        .in0(XMB),
+        .in1(MWB),
+        .in2(B_DX),
+        .in3(B_DX)
+    );
+
+    assign data_ALUInB = (aluInB_ctrl) ? imm_DX : ALUInB;
+
+
     wire [31:0] ALUout;
     wire ne_ALU, lessThan_ALU, overflow_ALU; // flags for not equality, less than, overflow
     alu ALU(
-        .data_operandA(A_DX),
+        .data_operandA(ALUinA),
         .data_operandB(data_ALUInB),
         .ctrl_ALUopcode(op_ctrl_dx),
         .data_result(ALUout),
@@ -485,7 +526,8 @@ module processor(
     /* ------------------------------------------------------------- */
     /* |                           XM Latch                        | */
     /* ------------------------------------------------------------- */
-    wire [31:0] O_XM, B_XM, IR_XM, CONTROL_XM, TARGET_XM;
+    wire [31:0] O_XM;
+    assign XMB = O_XM; // bypassed data from XM stage
     latch O_XM_LATCH(
         .data_out(O_XM),
         .data_in(CONTROL_DX[8] ? PC_DX : (exception==32'd0) ? (is_mult || is_div) && ctrl_multidiv_datardy ? multdiv_result : ALUout : exception),
@@ -538,7 +580,7 @@ module processor(
     /* ------------------------------------------------------------- */
     /* |                           MW Latch                        | */
     /* ------------------------------------------------------------- */
-    wire [31:0] O_MW, D_MW, IR_MW, CONTROL_MW, TARGET_MW;
+    wire [31:0] O_MW, D_MW;
     latch O_MW_LATCH(
         .data_out(O_MW),
         .data_in(O_XM),
@@ -584,6 +626,7 @@ module processor(
     wire [31:0] regWrite = (IR_MW[31:27]==5'b00011) ? 32'd31 : (IR_MW[31:27]==5'b10101) ? 32'd30 : CONTROL_MW[31:27];
 
     assign data_writeReg = (CONTROL_MW[13]) ? D_MW : (IR_MW[31:27]==5'b10101) ? TARGET_MW : O_MW;
+    assign MWB = data_writeReg;
     assign ctrl_writeEnable = CONTROL_MW[15] || (IR_MW[31:27]==5'b10101);
     assign ctrl_writeReg = regWrite;
 
