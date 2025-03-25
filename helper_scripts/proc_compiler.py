@@ -188,7 +188,9 @@ def compile_all_procs(tests, procs_folder="example", en_mt=True, wrapper_path=dv
     # Set up banned verilog checker
     banned_verilog_checker = set_up_verilog_checker()
 
-    for proc in os.listdir(procs_folder):
+    proc_dirs = [proc for proc in os.listdir(procs_folder) if os.path.isdir(os.path.join(procs_folder, proc))]
+
+    for proc in proc_dirs:
         HTMLGenerator.clear()
         if os.path.isdir(os.path.join(procs_folder, proc)):
             proc_folder = os.path.join(procs_folder, proc)

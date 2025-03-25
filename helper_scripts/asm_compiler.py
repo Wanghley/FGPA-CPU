@@ -105,7 +105,6 @@ def get_active_list(asm_dir=os.path.join('test_files', 'assembly_files'), append
 # FIXME: Scuffed fix for people with no Python but infinite Python3
 def run_assemble_command(file_path, canonical_name, asm_dir, mem_dir, asm_contents, py_cmd='python'):
     try:
-        HTMLGenerator.add_content(canonical_name, asm_contents, keep=True, show_line_numbers=True)
         if SHOULD_ASSEMBLE:
             command = [py_cmd, os.path.join('assembler-python-version', 'assemble.py'), file_path]
             result = subprocess.run(command, capture_output=True, text=True, check=True)
@@ -116,8 +115,6 @@ def run_assemble_command(file_path, canonical_name, asm_dir, mem_dir, asm_conten
             shutil.move(mem_file_path, moved_to)
 
             Logger.info(f"Assembly successful for {file_path}. Output written to {moved_to}.")
-        else:
-            return
     except subprocess.CalledProcessError as e:
         # Extract out traceback part
         error_text = e.stderr
@@ -126,6 +123,9 @@ def run_assemble_command(file_path, canonical_name, asm_dir, mem_dir, asm_conten
         HTMLGenerator.add_content(canonical_name, f"Assembly file failed to compile. Error: {error_text}", keep=True)
         Logger.warn(f"Assembler failed to execute for {file_path}. Error: {error_text}")
         delete_state_file(mem_dir)
+        return 
+
+    HTMLGenerator.add_content(canonical_name, asm_contents, keep=True, show_line_numbers=True)
 
 def assemble(file_path, canonical_name, asm_dir, mem_dir):
     # Add assembly contents to HTML generator

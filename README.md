@@ -1,3 +1,5 @@
+# DEPRECATED: Moved to Duke GitLab
+
 # Assembly File Autotester
 ## Overview 
 This repository provides an automated, local way to test your ECE 350 processor against various assembly files. This repository also contains the documents needed for the GTKWave Lab.

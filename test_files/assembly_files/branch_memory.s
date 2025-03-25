@@ -15,25 +15,25 @@ nop
 lw $r4, 5($r0)
 bne $r4, $r0, correct
 nop
-addi $r20, $r0, 1     # missed branch (rd bypassing into bne)
+addi $r20, $r20, 1     # missed branch (rd bypassing into bne)
 nop
 correct: nop
 lw $r5, 5($r0)
 bne $r0, $r5, correcttwo
 nop
-addi $r20, $r0, 2     # missed branch (rs bypassing into bne)
+addi $r20, $r20, 2     # missed branch (rs bypassing into bne)
 nop
 correcttwo: nop
 lw $r6, 7($r0)
 blt $r6, $r0, correctthree
 nop
-addi $r20, $r0, 4     # missed branch (rd bypassing into blt)
+addi $r20, $r20, 4     # missed branch (rd bypassing into blt)
 nop
 correctthree: nop
 lw $r7, 5($r0)
 blt $r0, $r7, correctfour
 nop
-addi $r20, $r0, 8     # missed branch (rs bypassing into blt)
+addi $r20, $r20, 8     # missed branch (rs bypassing into blt)
 nop
 correctfour: nop
 lw $r8, 6($r0)
