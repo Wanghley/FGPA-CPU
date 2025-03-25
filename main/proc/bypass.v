@@ -1,4 +1,4 @@
-module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B);
+module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B, byp_selMem_data, IR_DX, IR_MW, IR_XM);
 
     // ctrl signals
     // 31:27 = destination register (rd)
@@ -19,10 +19,30 @@ module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B);
 
 
     input [31:0] ctrl_xm, ctrl_dx, ctrl_mw;
+    input [31:0] IR_DX, IR_MW, IR_XM;
     output [1:0] byp_selALU_A, byp_selALU_B;
+    output byp_selMem_data;
 
-    assign byp_selALU_A = (ctrl_dx[5:0] == ctrl_xm[31:27]) ? 2'd0 :
-                          (ctrl_dx[5:0] == ctrl_mw[31:27]) ? 2'd1 :
+    // get rt from IR
+    wire [4:0] rt_dx, rt_mw, rt_xm;
+    instrdecoder decoder_IR_DX (
+        .instruction(IR_DX),
+        .rt(rt_dx)
+    );
+
+
+    // ALU A bypass
+    // 00 = no bypass
+    // 01 = bypass from DX
+    // 10 = bypass from MW
+    // DXRS == MWRS && DXRWE && DXRS != 0
+    assign byp_selALU_A = (ctrl_dx[5:1] == ctrl_xm[31:27] && ctrl_xm[15] && ctrl_xm[31:27] != 5'd0) ? 2'd0 :
+                          (ctrl_dx[5:1] == ctrl_mw[31:27] && ctrl_mw[15] && ctrl_mw[31:27] != 5'd0) ? 2'd1 :
                           2'd2;
+
+    assign byp_selALU_B = (rt_dx == ctrl_xm[31:27] && ctrl_xm[15] && rt_dx != 5'd0) ? 2'd0 :
+                          (rt_dx == ctrl_mw[31:27] && ctrl_mw[15] && rt_dx != 5'd0) ? 2'd1 :
+                          2'd2;
+    
 
 endmodule
