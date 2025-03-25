@@ -567,7 +567,7 @@ module processor(
     );
     latch CONTROL_XM_LATCH(
         .data_out(CONTROL_XM),
-        .data_in((exception==32'd0) ? CONTROL_DX : CONTROL_DX),
+        .data_in((exception==32'd0) ? CONTROL_DX : {5'd30, CONTROL_DX[26:17], 1'b1, CONTROL_DX[15:0]}),
         .clk(clock),
         .en(1'b1),
         .clr(reset)
