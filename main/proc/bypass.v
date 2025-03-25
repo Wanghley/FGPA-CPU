@@ -43,6 +43,9 @@ module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B, byp_selMem
     assign byp_selALU_B = (rt_dx == ctrl_xm[31:27] && ctrl_xm[15] && rt_dx != 5'd0) ? 2'd0 :
                           (rt_dx == ctrl_mw[31:27] && ctrl_mw[15] && rt_dx != 5'd0) ? 2'd1 :
                           2'd2;
+
+    assign byp_selMem_data = (ctrl_xm[31:27] == ctrl_mw[31:27] && ctrl_mw[15] && ctrl_mw[31:27] != 5'd0) ? 1'b0 :
+                             1'b1;
     
 
 endmodule
