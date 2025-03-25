@@ -158,6 +158,13 @@ module processor(
     wire fd_stall = multdiv_hazard;
     wire dx_stall = multdiv_hazard;
 
+    // -------------------------------------------------------------
+    // |                    Bypassing Logic                        |
+    // -------------------------------------------------------------
+    wire [2:0] byp_selALU_A, byp_selALU_B; // ALU A and B bypass selectors
+    wire [31:0] DXB, XMB,MWB,FDB; // bypassed data from DX, XM, MW, and WB stages
+
+
     /* ------------------------------------------------------------- */
     /* |                           FD Latch                        | */
     /* ------------------------------------------------------------- */
@@ -238,8 +245,7 @@ module processor(
     assign ctrl_in[8] = jal;
     assign ctrl_in[7] = jr;
     assign ctrl_in[6] = (opcode == 5'b10110 && data_readRegA != 32'd0) ? 1'b1 : 1'b0; // BEX instruction
-    // TODO: implement control signals for the rest of the control unit
-    assign ctrl_in[5:0] = 6'd0;
+    assign ctrl_in[5:0] = rs;
 
     // pass arguments to my registerfile in the wrapper module
     assign ctrl_readRegA = (jr || bne ||blt) ? rd : (opcode == 5'b10110)? 5'd30 : rs;
