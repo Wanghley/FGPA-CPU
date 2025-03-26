@@ -39,31 +39,64 @@ module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B, byp_selMem
     wire blt_rs_hazard_xm = is_blt && (blt_rs == ctrl_xm[31:27]) && ctrl_xm[15]; // XM stage writing to rs
     wire blt_rs_hazard_mw = is_blt && (blt_rs == ctrl_mw[31:27]) && ctrl_mw[15]; // MW stage writing to rs
 
-    // ALU A bypass
-    // 00 = no bypass
-    // 01 = bypass from DX
-    // 10 = bypass from MW
-    // DXRS == MWRS && DXRWE && DXRS != 0
-    assign byp_selALU_A = blt_rd_hazard_xm ? 2'b00 :   // Bypass from XM
-                      blt_rd_hazard_mw ? 2'b01 :   // Bypass from MW 
-                        (ctrl_dx[5:1] == ctrl_xm[31:27] && ctrl_xm[15] && ctrl_xm[31:27] != 5'd0) ? 2'd0 :
-                          (ctrl_dx[5:1] == ctrl_mw[31:27] && ctrl_mw[15] && ctrl_mw[31:27] != 5'd0) ? 2'd1 :
-                          2'd2;
+    // Specific check for LW in XM stage (memory-to-register operation)
+    wire is_lw_xm = ctrl_xm[13]; // LW in XM stage (mem_to_reg is set)
 
-    assign byp_selALU_B = blt_rs_hazard_xm ? 2'b00 :   // Bypass from XM
-                        blt_rs_hazard_mw ? 2'b01 :   // Bypass from MW
-                        (rt_dx == ctrl_xm[31:27] && ctrl_xm[15] && rt_dx != 5'd0) ? 2'd0 :
-                          (rt_dx == ctrl_mw[31:27] && ctrl_mw[15] && rt_dx != 5'd0) ? 2'd1 :
-                          2'd2;
+    // LW → BLT hazards (register in LW is needed by BLT)
+    wire lw_blt_rd_hazard = is_blt && is_lw_xm && (blt_rd == ctrl_xm[31:27]) && ctrl_xm[15];
+    wire lw_blt_rs_hazard = is_blt && is_lw_xm && (blt_rs == ctrl_xm[31:27]) && ctrl_xm[15];
+
+    // ALU A bypass - update to handle LW → BLT case for rd
+    // 00 = bypass from XM
+    // 01 = bypass from MW
+    // 10 = use register file value
+    // 11 = use direct memory value (for LW → BLT case)
+    assign byp_selALU_A = lw_blt_rd_hazard ? 2'b11 :       // Direct from memory for LW→BLT
+                        blt_rd_hazard_xm ? 2'b00 :       // Bypass from XM
+                        blt_rd_hazard_mw ? 2'b01 :       // Bypass from MW 
+                        (ctrl_dx[5:1] == ctrl_xm[31:27] && ctrl_xm[15] && ctrl_xm[31:27] != 5'd0) ? 2'b00 :
+                        (ctrl_dx[5:1] == ctrl_mw[31:27] && ctrl_mw[15] && ctrl_mw[31:27] != 5'd0) ? 2'b01 :
+                        2'b10;
+
+    // ALU B bypass - update to handle LW → BLT case for rs
+    assign byp_selALU_B = lw_blt_rs_hazard ? 2'b11 :       // Direct from memory for LW→BLT
+                        blt_rs_hazard_xm ? 2'b00 :       // Bypass from XM
+                        blt_rs_hazard_mw ? 2'b01 :       // Bypass from MW
+                        (rt_dx == ctrl_xm[31:27] && ctrl_xm[15] && rt_dx != 5'd0) ? 2'b00 :
+                        (rt_dx == ctrl_mw[31:27] && ctrl_mw[15] && rt_dx != 5'd0) ? 2'b01 :
+                        2'b10;
 
     assign byp_selMem_data = (ctrl_xm[31:27] == ctrl_mw[31:27] && ctrl_mw[15] && ctrl_mw[31:27] != 5'd0) ? 1'b0 :
                              1'b1;
 
 
     // JR bypass
-    assign byp_jr = (ctrl_xm[31:27] == 5'd31 && ctrl_xm[15]) ? 2'b00 :  // Bypass from XM
-                    (ctrl_mw[31:27] == 5'd31 && ctrl_mw[15]) ? 2'b01 :  // Bypass from MW
-                    2'b10;  // Use the value directly
+    wire is_jr_dx = ctrl_dx[7]; // JR control bit
+    wire [4:0] jr_rd;
+    instrdecoder decoder_jr_reg (
+        .instruction(IR_DX),
+        .rd(jr_rd)
+    );
+
+    // Check if current instruction is JR
+    wire is_jr = IR_DX[31:27] == 5'b00100 || ctrl_dx[7];  // JR opcode or JR control bit
+
+    // Check for hazards with previous instructions
+    wire jr_rd_hazard_xm = is_jr && (jr_rd == ctrl_xm[31:27]) && ctrl_xm[15]; // XM stage writing to jr_rd
+    wire jr_rd_hazard_mw = is_jr && (jr_rd == ctrl_mw[31:27]) && ctrl_mw[15]; // MW stage writing to jr_rd
+
+    // Specific check for LW in XM stage (memory-to-register operation)
+    wire lw_jr_hazard = is_jr && is_lw_xm && (jr_rd == ctrl_xm[31:27]) && ctrl_xm[15];
+
+    // JR bypass mux selector
+    // 00 = bypass from LW in XM
+    // 01 = bypass from XM
+    // 10 = bypass from MW
+    // 11 = use register file value
+    assign byp_jr = lw_jr_hazard ? 2'b00 :       // Bypass from LW in XM
+                    jr_rd_hazard_xm ? 2'b01 :       // Bypass from XM
+                    jr_rd_hazard_mw ? 2'b10 :       // Bypass from MW
+                    2'b11;                          // Use register file value
     
 
 endmodule
