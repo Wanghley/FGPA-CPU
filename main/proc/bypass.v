@@ -46,22 +46,38 @@ module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B, byp_selMem
     wire lw_blt_rd_hazard = is_blt && is_lw_xm && (blt_rd == ctrl_xm[31:27]) && ctrl_xm[15];
     wire lw_blt_rs_hazard = is_blt && is_lw_xm && (blt_rs == ctrl_xm[31:27]) && ctrl_xm[15];
 
+    // Detect LW->BNE dependency
+    // Detect LW->BNE dependency
+    wire is_bne = IR_DX[31:27] == 5'b00010; // BNE opcode
+    wire [4:0] bne_rd = IR_DX[26:22]; // First compare register
+    wire [4:0] bne_rs = IR_DX[21:17]; // Second compare register
+
+    // BNE hazards with previous instructions
+    wire bne_rd_hazard_xm = is_bne && (bne_rd == ctrl_xm[31:27]) && ctrl_xm[15]; 
+    wire bne_rd_hazard_mw = is_bne && (bne_rd == ctrl_mw[31:27]) && ctrl_mw[15];
+    wire bne_rs_hazard_xm = is_bne && (bne_rs == ctrl_xm[31:27]) && ctrl_xm[15];
+    wire bne_rs_hazard_mw = is_bne && (bne_rs == ctrl_mw[31:27]) && ctrl_mw[15];
+
+    // LW → BNE hazards (when LW result is needed by BNE)
+    wire lw_bne_rd_hazard = is_bne && is_lw_xm && (bne_rd == ctrl_xm[31:27]) && ctrl_xm[15];
+    wire lw_bne_rs_hazard = is_bne && is_lw_xm && (bne_rs == ctrl_xm[31:27]) && ctrl_xm[15];
+
     // ALU A bypass - update to handle LW → BLT case for rd
     // 00 = bypass from XM
     // 01 = bypass from MW
     // 10 = use register file value
     // 11 = use direct memory value (for LW → BLT case)
-    assign byp_selALU_A = lw_blt_rd_hazard ? 2'b11 :       // Direct from memory for LW→BLT
-                        blt_rd_hazard_xm ? 2'b00 :       // Bypass from XM
-                        blt_rd_hazard_mw ? 2'b01 :       // Bypass from MW 
+    assign byp_selALU_A = lw_blt_rd_hazard || lw_bne_rd_hazard ? 2'b11 :  // Direct from memory for LW→BLT/BNE
+                        blt_rd_hazard_xm || bne_rd_hazard_xm ? 2'b00 :   // Bypass from XM
+                        blt_rd_hazard_mw || bne_rd_hazard_mw ? 2'b01 :   // Bypass from MW 
                         (ctrl_dx[5:1] == ctrl_xm[31:27] && ctrl_xm[15] && ctrl_xm[31:27] != 5'd0) ? 2'b00 :
                         (ctrl_dx[5:1] == ctrl_mw[31:27] && ctrl_mw[15] && ctrl_mw[31:27] != 5'd0) ? 2'b01 :
                         2'b10;
 
-    // ALU B bypass - update to handle LW → BLT case for rs
-    assign byp_selALU_B = lw_blt_rs_hazard ? 2'b11 :       // Direct from memory for LW→BLT
-                        blt_rs_hazard_xm ? 2'b00 :       // Bypass from XM
-                        blt_rs_hazard_mw ? 2'b01 :       // Bypass from MW
+    // ALU B bypass selector
+    assign byp_selALU_B = lw_blt_rs_hazard || lw_bne_rs_hazard ? 2'b11 :  // Direct from memory for LW→BLT/BNE
+                        blt_rs_hazard_xm || bne_rs_hazard_xm ? 2'b00 :   // Bypass from XM
+                        blt_rs_hazard_mw || bne_rs_hazard_mw ? 2'b01 :   // Bypass from MW
                         (rt_dx == ctrl_xm[31:27] && ctrl_xm[15] && rt_dx != 5'd0) ? 2'b00 :
                         (rt_dx == ctrl_mw[31:27] && ctrl_mw[15] && rt_dx != 5'd0) ? 2'b01 :
                         2'b10;
