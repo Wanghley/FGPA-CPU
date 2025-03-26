@@ -170,10 +170,11 @@ module processor(
         .stall(stall_signal)
     );
 
-    assign pc_stall = branch_hazard || bex_hazard || multdiv_hazard || stall_signal;
+    assign pc_stall = bex_hazard || multdiv_hazard || stall_signal;
     wire fd_stall = multdiv_hazard || stall_signal;
     wire dx_stall = multdiv_hazard;
     wire jump_flush = is_jump_ex && ~pc_stall;
+    wire branch, is_bex_taken, is_jump_ex;
 
     // -------------------------------------------------------------
     // |                    Bypassing Logic                        |
@@ -200,17 +201,17 @@ module processor(
     /* ------------------------------------------------------------- */
     latch PC_FD_LATCH(
         .data_out(PC_FD),
-        .data_in(PCnext),
+        .data_in((stall_signal || branch || is_bex_taken)? 32'd0:PCnext),
         .clk(clock),
         .en(~fd_stall),
         .clr(reset)
     );
     latch IR_FD_LATCH(
         .data_out(IR_FD),
-        .data_in(jump_flush ? 32'd0 : q_imem),
+        .data_in((stall_signal || branch || is_bex_taken || jump_flush) ? 32'd0 : q_imem),
         .clk(clock),
         .en(~fd_stall),
-        .clr(reset || jump_flush)
+        .clr(reset)
     );
     /* ------------------------------------------------------------- */
     /* ############################################################# */
@@ -305,49 +306,49 @@ module processor(
     wire [31:0] imm_DX, shamt_DX, aluop_DX;
     latch PC_DX_LATCH(
         .data_out(PC_DX),
-        .data_in(stall_signal? 32'd0:PC_FD),
+        .data_in((stall_signal || branch || is_bex_taken || is_jump_ex)? 32'd0:PC_FD),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
     );
     latch IR_DX_LATCH(
         .data_out(IR_DX),
-        .data_in(stall_signal? 32'd0:IR_FD),
+        .data_in((stall_signal || branch || is_bex_taken || is_jump_ex)? 32'd0:IR_FD),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
     );
     latch A_DX_LATCH(
         .data_out(A_DX),
-        .data_in(stall_signal? 32'd0:data_readRegA),
+        .data_in((stall_signal || branch || is_bex_taken || is_jump_ex)? 32'd0:data_readRegA),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
     );
     latch B_DX_LATCH(
         .data_out(B_DX),
-        .data_in(stall_signal? 32'd0:data_readRegB),
+        .data_in((stall_signal || branch || is_bex_taken || is_jump_ex)? 32'd0:data_readRegB),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
     );
     latch IMM_DX_LATCH(
         .data_out(imm_DX),
-        .data_in(stall_signal? 32'd0:imm_ext),
+        .data_in((stall_signal || branch || is_bex_taken || is_jump_ex)? 32'd0:imm_ext),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
     );
     latch CONTROL_DX_LATCH(
         .data_out(CONTROL_DX),
-        .data_in(stall_signal? 32'd0:ctrl_in),
+        .data_in((stall_signal || branch || is_bex_taken || is_jump_ex)? 32'd0:ctrl_in),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
     );
     latch TARGET_LATCH(
         .data_out(TARGET_DX),
-        .data_in(stall_signal? 32'd0:bex_target),
+        .data_in((stall_signal || branch || is_bex_taken || is_jump_ex)? 32'd0:bex_target),
         .clk(clock),
         .en(~dx_stall),
         .clr(reset)
@@ -491,10 +492,10 @@ module processor(
     wire bne_instr = CONTROL_DX[12]; // BNE control signal
     wire blt_instr = CONTROL_DX[11]; // BLT control signal
     wire branch_instr = CONTROL_DX[10]; // Branch instruction indicator
-    wire is_bex_taken = (IR_DX[31:27] == 5'b10110) && CONTROL_DX[6];
+    assign is_bex_taken = (IR_DX[31:27] == 5'b10110) && CONTROL_DX[6];
 
     wire branch_condition_met = (ne_ALU & bne_instr) || (lessThan_ALU & blt_instr) || is_bex_taken;
-    wire branch = branch_condition_met && branch_instr;
+    assign branch = branch_condition_met && branch_instr;
 
     // Calculate branch target - this is the correct target address if branch is taken
     wire [31:0] branchPC_calculated;
@@ -528,7 +529,7 @@ module processor(
     // otherwise use the branch_pc value (which may be either the branch target or next PC)
     // check if it is a jr instruction
     // Correct jump PC selection logic
-    wire is_jump_ex = CONTROL_DX[9] || CONTROL_DX[8] || CONTROL_DX[7]; // j, jal, or jr
+    assign is_jump_ex = CONTROL_DX[9] || CONTROL_DX[8] || CONTROL_DX[7]; // j, jal, or jr
     wire [31:0] jump_pc = CONTROL_DX[7] ? A_DX :             // JR: jump to register value
                          (CONTROL_DX[9] || CONTROL_DX[8]) ? imm_DX :  // J/JAL: jump to immediate
                          branch_pc;
