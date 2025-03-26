@@ -377,7 +377,7 @@ module processor(
         .in0(XMB),
         .in1(MWB),
         .in2(A_DX),
-        .in3(A_DX)
+        .in3(q_dmem)
     );
 
     wire[31:0] ALUInB;
@@ -388,7 +388,7 @@ module processor(
         .in0(XMB),
         .in1(MWB),
         .in2(B_DX),
-        .in3(B_DX)
+        .in3(q_dmem)
     );
 
     assign data_ALUInB = (aluInB_ctrl) ? imm_DX : ALUInB;
@@ -542,14 +542,16 @@ module processor(
     // otherwise use the branch_pc value (which may be either the branch target or next PC)
     // check if it is a jr instruction
     // Correct jump PC selection logic
+
+    // Modified jump register value selection
     wire [31:0] jump_reg_value;
     mux_4_1 JR_MUX(
         .out(jump_reg_value),
-        .select(byp_jr),
-        .in0(XMB),
-        .in1(MWB),
-        .in2(A_DX),
-        .in3(A_DX)
+        .select(byp_jr), // Use q_dmem directly for LW→JR case
+        .in0(q_dmem),                                    // Normal XM bypass
+        .in1(XMB),                                    // Normal MW bypass 
+        .in2(MWB),                                   // Register file value
+        .in3(A_DX)                                  // Direct from memory for LW→JR case
     );
     assign is_jump_ex = CONTROL_DX[9] || CONTROL_DX[8] || CONTROL_DX[7]; // j, jal, or jr
     wire [31:0] jump_pc = CONTROL_DX[7] ? jump_reg_value :             // JR: jump to register value
