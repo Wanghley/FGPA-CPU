@@ -179,7 +179,7 @@ module processor(
     // -------------------------------------------------------------
     // |                    Bypassing Logic                        |
     // -------------------------------------------------------------
-    wire [1:0] byp_selALU_A, byp_selALU_B; // ALU A and B bypass selectors
+    wire [1:0] byp_selALU_A, byp_selALU_B,byp_jr; // ALU A and B bypass selectors
     wire [31:0] DXB, XMB,MWB,FDB; // bypassed data from DX, XM, MW, and WB stages
     wire byp_selMem_data; // Memory data bypass selector
 
@@ -192,7 +192,8 @@ module processor(
         .IR_DX(IR_DX),
         .IR_MW(IR_MW),
         .IR_XM(IR_XM),
-        .byp_selMem_data(byp_selMem_data)
+        .byp_selMem_data(byp_selMem_data),
+        .byp_jr(byp_jr)
     );
 
 
@@ -541,8 +542,17 @@ module processor(
     // otherwise use the branch_pc value (which may be either the branch target or next PC)
     // check if it is a jr instruction
     // Correct jump PC selection logic
+    wire [31:0] jump_reg_value;
+    mux_4_1 JR_MUX(
+        .out(jump_reg_value),
+        .select(byp_jr),
+        .in0(XMB),
+        .in1(MWB),
+        .in2(A_DX),
+        .in3(A_DX)
+    );
     assign is_jump_ex = CONTROL_DX[9] || CONTROL_DX[8] || CONTROL_DX[7]; // j, jal, or jr
-    wire [31:0] jump_pc = CONTROL_DX[7] ? A_DX :             // JR: jump to register value
+    wire [31:0] jump_pc = CONTROL_DX[7] ? jump_reg_value :             // JR: jump to register value
                          (CONTROL_DX[9] || CONTROL_DX[8]) ? imm_DX :  // J/JAL: jump to immediate
                          branch_pc;
 
