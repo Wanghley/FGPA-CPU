@@ -18,8 +18,10 @@ module stall(ctrl_dx, ir_dx, ir_fd, stall);
     wire [4:0] rd_dx;
     assign rd_dx = ctrl_dx[31:27];
 
+    // Don't stall for BLT following a load instruction
     assign stall = (opcode_dx == 5'b01000) && 
                    ((rs_fd == ctrl_dx[31:27]) ||
-                    (rs_fd == ctrl_dx[31:27]) ||
-                    (rt_fd == ctrl_dx[31:27]) && (opcode_fd != 5'b00111));
+                    (rt_fd == ctrl_dx[31:27])) && 
+                   (opcode_fd != 5'b00111) &&  // Don't stall for SW
+                   (opcode_fd != 5'b00110);    // Don't stall for BLT
 endmodule
