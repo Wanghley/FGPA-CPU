@@ -492,10 +492,22 @@ module processor(
     wire bne_instr = CONTROL_DX[12]; // BNE control signal
     wire blt_instr = CONTROL_DX[11]; // BLT control signal
     wire branch_instr = CONTROL_DX[10]; // Branch instruction indicator
-    assign is_bex_taken = (IR_DX[31:27] == 5'b10110) && CONTROL_DX[6];
+    
+    // Enhanced BEX logic with proper bypassing
+    wire setx_in_xm = (IR_XM[31:27] == 5'b10101);
+    wire setx_in_mw = (IR_MW[31:27] == 5'b10101);
+    wire is_bex = (IR_DX[31:27] == 5'b10110);
 
-    wire branch_condition_met = (ne_ALU & bne_instr) || (lessThan_ALU & blt_instr) || is_bex_taken;
-    assign branch = branch_condition_met && branch_instr;
+    // Determine the value of $30 considering all pipeline stages
+    wire [31:0] exception_value = 
+        setx_in_xm ? TARGET_XM :           // Bypass from XM stage (SETX just executed)
+        setx_in_mw ? TARGET_MW :           // Bypass from MW stage (SETX in write-back)
+        CONTROL_DX[6] ? 32'd1 : 32'd0; // Value from register read in ID stage
+
+    assign is_bex_taken = is_bex && (exception_value != 32'd0);
+
+    wire branch_condition_met = (ne_ALU & bne_instr) || (lessThan_ALU & blt_instr);
+    assign branch = (branch_condition_met && branch_instr) || is_bex_taken;
 
     // Calculate branch target - this is the correct target address if branch is taken
     wire [31:0] branchPC_calculated;
