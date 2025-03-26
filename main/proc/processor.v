@@ -173,6 +173,7 @@ module processor(
     assign pc_stall = branch_hazard || bex_hazard || multdiv_hazard || stall_signal;
     wire fd_stall = multdiv_hazard || stall_signal;
     wire dx_stall = multdiv_hazard;
+    wire jump_flush = is_jump_ex && ~pc_stall;
 
     // -------------------------------------------------------------
     // |                    Bypassing Logic                        |
@@ -206,10 +207,10 @@ module processor(
     );
     latch IR_FD_LATCH(
         .data_out(IR_FD),
-        .data_in(q_imem),
+        .data_in(jump_flush ? 32'd0 : q_imem),
         .clk(clock),
         .en(~fd_stall),
-        .clr(reset)
+        .clr(reset || jump_flush)
     );
     /* ------------------------------------------------------------- */
     /* ############################################################# */
@@ -539,15 +540,16 @@ module processor(
     /* ------------------------------------------------------------- */
     /* |                           XM Latch                        | */
     /* ------------------------------------------------------------- */
+    // Add this before the XM latch
     wire [31:0] O_XM;
     assign XMB = O_XM; // bypassed data from XM stage
     latch O_XM_LATCH(
-        .data_out(O_XM),
-        .data_in(CONTROL_DX[8] ? PC_DX : (exception==32'd0) ? (is_mult || is_div) && ctrl_multidiv_datardy ? multdiv_result : ALUout : exception),
-        .clk(clock),
-        .en(1'b1),
-        .clr(reset) 
-    );
+    .data_out(O_XM),
+    .data_in(CONTROL_DX[8] ? PC_DX : (exception==32'd0) ? (is_mult || is_div) && ctrl_multidiv_datardy ? multdiv_result : ALUout : exception),
+    .clk(clock),
+    .en(1'b1),
+    .clr(reset) 
+);
     latch B_XM_LATCH(
         .data_out(B_XM),
         .data_in(B_DX),
