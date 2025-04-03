@@ -15,13 +15,25 @@ echo "Moving required files..."
 tmp_dir=$(mktemp -d)
 trap 'rm -rf "$tmp_dir"; echo "Temporary files cleaned up due to an error.";' EXIT
 
-# Move only folders and .v files from main/proc/ to the temporary directory
+# Explicitly create the temporary proc directory to store Verilog files
 mkdir -p "$tmp_dir/proc"
+
+# Copy Verilog files and directory structure from main/proc to temporary directory
 if [ -d "main/proc" ]; then
-  # Copy directories
-  find "main/proc" -type d -exec mkdir -p "$tmp_dir/{}" \;
-  # Copy only .v files
-  find "main/proc" -name "*.v" -exec cp {} "$tmp_dir/{}" \;
+  echo "Copying Verilog files from main/proc..."
+  
+  # First copy the directory structure
+  find "main/proc" -type d | while read dir; do
+    relative_dir=${dir#main/}
+    mkdir -p "$tmp_dir/$relative_dir"
+  done
+  
+  # Then copy the .v files
+  find "main/proc" -name "*.v" | while read file; do
+    relative_file=${file#main/}
+    cp "$file" "$tmp_dir/$relative_file"
+    echo "Copied: $file"
+  done
 else
   echo "Warning: main/proc/ is empty or does not exist. Skipping..."
 fi
@@ -29,29 +41,40 @@ fi
 # Move main/constraints.xdc to the temporary directory
 if [ -f "main/constraints.xdc" ]; then
   cp "main/constraints.xdc" "$tmp_dir/"
+  echo "Copied: main/constraints.xdc"
 else
   echo "Warning: main/constraints.xdc not found. Skipping..."
 fi
 
-# Important: Create a list of files to keep - this will help us avoid deleting .git
-mkdir -p "$tmp_dir/to_keep"
-cp -r .git "$tmp_dir/to_keep/"
+# Backup the git directory
+echo "Backing up .git directory..."
+cp -r .git "$tmp_dir/git_backup"
 
-# Instead of dangerous find/delete, use git to get a list of tracked files and remove them selectively
-git ls-files | xargs rm -f 2>/dev/null || true
-# Remove directories that might still exist (but keep .git)
-find . -mindepth 1 -maxdepth 1 -type d -not -name ".git" -exec rm -rf {} \; 2>/dev/null || true
+# Clean up the current directory but preserve .git
+echo "Cleaning up current directory (preserving .git)..."
+find . -mindepth 1 -maxdepth 1 -not -path "./.git" -not -path "./.git*" -exec rm -rf {} \; 2>/dev/null || true
 
-# Restore the .git directory from our backup (just in case)
-cp -r "$tmp_dir/to_keep/.git" . 2>/dev/null || true
+# Check if git is still intact
+if ! git status >/dev/null 2>&1; then
+  echo "Git repository was damaged. Restoring from backup..."
+  rm -rf .git
+  cp -r "$tmp_dir/git_backup" .git
+fi
 
-# Restore the required files to root
+# Copy the contents from proc in tmp_dir to root
+echo "Restoring Verilog files to root directory..."
 if [ -d "$tmp_dir/proc" ] && [ "$(ls -A "$tmp_dir/proc" 2>/dev/null)" ]; then
-  cp -r "$tmp_dir/proc/"* ./ 2>/dev/null || true
+  cp -r "$tmp_dir/proc/"* ./ 2>/dev/null || echo "Note: No files to copy from proc directory."
+  # List what was copied
+  echo "Files copied to root:"
+  ls -la | grep -v "^d"
+  echo "Directories copied to root:"
+  ls -la | grep "^d" | grep -v "\.git"
 fi
 
 if [ -f "$tmp_dir/constraints.xdc" ]; then
   cp "$tmp_dir/constraints.xdc" ./
+  echo "Constraint file copied to root."
 fi
 
 # Cleanup temporary directory
@@ -64,6 +87,8 @@ if ! git status >/dev/null 2>&1; then
   exit 1
 fi
 
+# Add and commit changes
+echo "Committing changes..."
 git add .
 if git diff --cached --quiet; then
   echo "No changes to commit."
