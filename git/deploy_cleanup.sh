@@ -1,5 +1,8 @@
 #!/bin/bash
 # Exit immediately on error and treat unset variables as an error
+
+echo "Starting deployment cleanup..."
+
 set -euo pipefail
 
 # Ensure we are on the deploy branch
