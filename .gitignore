@@ -32,3 +32,6 @@ __pycache__/
 
 # allow requirements.txt
 !requirements.txt
+
+# ignore all __pycache__ folders it does not matter where they are
+__pycache__/
