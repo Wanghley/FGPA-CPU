@@ -179,8 +179,8 @@ module processor(
     // -------------------------------------------------------------
     // |                    Bypassing Logic                        |
     // -------------------------------------------------------------
-    wire [1:0] byp_selALU_A, byp_selALU_B,byp_jr; // ALU A and B bypass selectors
-    wire [31:0] DXB, XMB,MWB,FDB; // bypassed data from DX, XM, MW, and WB stages
+    wire [1:0] byp_selALU_A, byp_selALU_B, byp_jr, byp_b_dx; // ALU A and B bypass selectors
+    wire [31:0] DXB, XMB, MWB, FDB; // bypassed data from DX, XM, MW, and WB stages
     wire byp_selMem_data; // Memory data bypass selector
 
     bypass BYP(
@@ -193,7 +193,8 @@ module processor(
         .IR_MW(IR_MW),
         .IR_XM(IR_XM),
         .byp_selMem_data(byp_selMem_data),
-        .byp_jr(byp_jr)
+        .byp_jr(byp_jr),
+        .byp_b_dx(byp_b_dx)  // Removed trailing comma
     );
 
 
@@ -560,6 +561,18 @@ module processor(
 
     // Control flow change signal - true when we need to redirect the pipeline
     wire ctrl_flow_change = is_jump_ex || branch_mispredicted;
+
+    // B_XM bypass signal
+    wire [31:0] B_XM_byp;
+    mux_4_1 B_XM_MUX(
+        .out(B_XM_byp),
+        .select(byp_b_dx),
+        .in0(XMB), // Bypass from XM stage
+        .in1(MWB), // Bypass from MW stage
+        .in2(B_DX), // Bypass from regfile
+        .in3() // Direct from memory for LW→JR case
+    );
+    
     
 
     /* ------------------------------------------------------------- */

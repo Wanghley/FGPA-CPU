@@ -1,4 +1,4 @@
-module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B, byp_selMem_data, IR_DX, IR_MW, IR_XM, byp_jr);
+module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B, byp_selMem_data, IR_DX, IR_MW, IR_XM, byp_jr, byp_b_dx);
 
     // ctrl signals
     // 31:27 = destination register (rd)
@@ -30,6 +30,15 @@ module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B, byp_selMem
         .rt(rt_dx)
     );
 
+    wire [4:0] rt_xm;
+    instrdecoder decoder_IR_XM (
+        .instruction(IR_XM),
+        .rt(rt_xm)
+    );
+
+    // Check if XM stage contains a SW instruction
+    wire is_sw_xm = IR_XM[31:27] == 5'b00111; // SW opcode
+
     wire is_blt = IR_DX[31:27] == 5'b00110; // BLT opcode
     wire [4:0] blt_rd = IR_DX[26:22]; // rd field - CORRECT position for blt
     wire [4:0] blt_rs = IR_DX[21:17]; // rs field - CORRECT position for blt
@@ -41,6 +50,7 @@ module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B, byp_selMem
 
     // Specific check for LW in XM stage (memory-to-register operation)
     wire is_lw_xm = ctrl_xm[13]; // LW in XM stage (mem_to_reg is set)
+    wire is_lw_mw = ctrl_mw[13]; // LW in MW stage (mem_to_reg is set)
 
     // LW → BLT hazards (register in LW is needed by BLT)
     wire lw_blt_rd_hazard = is_blt && is_lw_xm && (blt_rd == ctrl_xm[31:27]) && ctrl_xm[15];
@@ -60,28 +70,45 @@ module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B, byp_selMem
 
     // LW → BNE hazards (when LW result is needed by BNE)
     wire lw_bne_rd_hazard = is_bne && is_lw_xm && (bne_rd == ctrl_xm[31:27]) && ctrl_xm[15];
-    wire lw_bne_rs_hazard = is_bne && is_lw_xm && (bne_rs == ctrl_xm[31:27]) && ctrl_xm[15];
+    wire lw_bne_rs_hazard = is_bne && (is_lw_xm||is_lw_mw) && (bne_rs == ctrl_xm[31:27]) && ctrl_xm[15];
 
     // ALU A bypass - update to handle LW → BLT case for rd
     // 00 = bypass from XM
     // 01 = bypass from MW
     // 10 = use register file value
     // 11 = use direct memory value (for LW → BLT case)
-    assign byp_selALU_A = lw_blt_rd_hazard || lw_bne_rd_hazard ? 2'b11 :  // Direct from memory for LW→BLT/BNE
-                        blt_rd_hazard_xm || bne_rd_hazard_xm ? 2'b00 :   // Bypass from XM
-                        blt_rd_hazard_mw || bne_rd_hazard_mw ? 2'b01 :   // Bypass from MW 
-                        (ctrl_dx[5:1] == ctrl_xm[31:27] && ctrl_xm[15] && ctrl_xm[31:27] != 5'd0) ? 2'b00 :
-                        (ctrl_dx[5:1] == ctrl_mw[31:27] && ctrl_mw[15] && ctrl_mw[31:27] != 5'd0) ? 2'b01 :
-                        2'b10;
+    assign byp_selALU_A = (is_bne || is_blt) ? 
+                        (  // Branch instruction special case
+                            (bne_rd == 5'd0 || blt_rd == 5'd0) ? 2'b10 :  // $r0 always comes from regfile
+                            lw_blt_rd_hazard || lw_bne_rd_hazard ? 2'b11 :  // Direct from memory 
+                            blt_rd_hazard_xm || bne_rd_hazard_xm ? 2'b00 :   // Bypass from XM
+                            blt_rd_hazard_mw || bne_rd_hazard_mw ? 2'b01 : 2'b10  // Bypass from MW or regfile
+                        ) :
+                        (  // Regular instruction case
+                            (ctrl_dx[5:1] == 5'd0) ? 2'b10 :  // $r0 always from regfile
+                            (ctrl_dx[5:1] == ctrl_xm[31:27] && ctrl_xm[15] && ctrl_xm[31:27] != 5'd0) ? 2'b00 :
+                            (ctrl_dx[5:1] == ctrl_mw[31:27] && ctrl_mw[15] && ctrl_mw[31:27] != 5'd0) ? 2'b01 :
+                            2'b10  // Default to register file
+                        );
 
     // ALU B bypass selector
-    assign byp_selALU_B = lw_blt_rs_hazard || lw_bne_rs_hazard ? 2'b11 :  // Direct from memory for LW→BLT/BNE
-                        blt_rs_hazard_xm || bne_rs_hazard_xm ? 2'b00 :   // Bypass from XM
-                        blt_rs_hazard_mw || bne_rs_hazard_mw ? 2'b01 :   // Bypass from MW
-                        (rt_dx == ctrl_xm[31:27] && ctrl_xm[15] && rt_dx != 5'd0) ? 2'b00 :
-                        (rt_dx == ctrl_mw[31:27] && ctrl_mw[15] && rt_dx != 5'd0) ? 2'b01 :
-                        2'b10;
+    assign byp_selALU_B = (is_bne || is_blt) ? 
+                        (  // Branch instruction special case
+                            (bne_rs == 5'd0 || blt_rs == 5'd0) ? 2'b10 :  // $r0 always comes from regfile
+                            lw_blt_rs_hazard || lw_bne_rs_hazard ? 2'b11 :  // Direct from memory
+                            blt_rs_hazard_xm || bne_rs_hazard_xm ? 2'b00 :   // Bypass from XM
+                            blt_rs_hazard_mw || bne_rs_hazard_mw ? 2'b01 : 2'b10  // Bypass from MW or regfile
+                        ) :
+                        (  // Regular instruction case
+                            (rt_dx == 5'd0) ? 2'b10 :  // $r0 always from regfile
+                            (rt_dx == ctrl_xm[31:27] && ctrl_xm[15]) ? 2'b00 :
+                            (rt_dx == ctrl_mw[31:27] && ctrl_mw[15]) ? 2'b01 :
 
+                            2'b10  // Default to register file
+                        );
+
+    
+    
     assign byp_selMem_data = (ctrl_xm[31:27] == ctrl_mw[31:27] && ctrl_mw[15] && ctrl_mw[31:27] != 5'd0) ? 1'b0 :
                              1'b1;
 
@@ -113,6 +140,23 @@ module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B, byp_selMem
                     jr_rd_hazard_xm ? 2'b01 :       // Bypass from XM
                     jr_rd_hazard_mw ? 2'b10 :       // Bypass from MW
                     2'b11;                          // Use register file value
+
+    // for sw bypassing
+    // 00 = bypass from XM
+    // 01 = bypass from MW 
+    // 10 = use register file value
+    wire is_sw_dx = IR_DX[31:27] == 5'b00111; // SW opcode
+    output [1:0] byp_b_dx;
+    wire [4:0] rd_byp_dx = ctrl_dx[31:27]; // Destination register for SW
+    wire [4:0] rt_byp_dx = IR_DX[26:22]; // Source register for SW
+    assign byp_b_dx = (is_sw_dx) ? 
+                        (  // SW instruction special case
+                            (rt_dx == 5'd0) ? 2'b10 :  // $r0 always from regfile
+                            (rt_dx == ctrl_xm[31:27] && ctrl_xm[15]) ? 2'b00 :
+                            (rt_dx == ctrl_mw[31:27] && ctrl_mw[15]) ? 2'b01 :
+                            2'b10  // Default to register file
+                        ) :
+                        2'b10; // Default to register file
     
 
 endmodule
