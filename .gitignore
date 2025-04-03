@@ -29,3 +29,6 @@ log/*
 *.pyc
 __pycache__/
 .venv/
+
+# allow requirements.txt
+!requirements.txt
