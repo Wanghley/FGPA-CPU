@@ -35,3 +35,5 @@ __pycache__/
 
 # ignore all __pycache__ folders it does not matter where they are
 __pycache__/
+
+main/proc.zip
