@@ -1,2 +1,0 @@
-num cycles:18
-r1=3
