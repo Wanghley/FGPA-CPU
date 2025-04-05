@@ -582,15 +582,15 @@ module processor(
     wire [31:0] O_XM;
     assign XMB = O_XM; // bypassed data from XM stage
     latch O_XM_LATCH(
-    .data_out(O_XM),
-    .data_in(CONTROL_DX[8] ? PC_DX : (exception==32'd0) ? (is_mult || is_div) && ctrl_multidiv_datardy ? multdiv_result : ALUout : exception),
-    .clk(clock),
-    .en(1'b1),
-    .clr(reset) 
-);
+        .data_out(O_XM),
+        .data_in(CONTROL_DX[8] ? PC_DX : (exception==32'd0) ? (is_mult || is_div) && ctrl_multidiv_datardy ? multdiv_result : ALUout : exception),
+        .clk(clock),
+        .en(1'b1),
+        .clr(reset) 
+    );
     latch B_XM_LATCH(
         .data_out(B_XM),
-        .data_in(B_DX),
+        .data_in(B_XM_byp), // Use the bypassed value
         .clk(clock),
         .en(1'b1),
         .clr(reset)
@@ -625,7 +625,7 @@ module processor(
 
     wire [31:0] dmem_out;
     assign address_dmem = O_XM;
-    assign data = byp_selMem_data==1'b0 ? MWB : B_XM;
+    assign data = byp_selMem_data == 1'b0 ? MWB : B_XM;
     assign wren = CONTROL_XM[14];
     assign dmem_out = q_dmem;
 
