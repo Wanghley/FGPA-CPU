@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Mon Mar 24 15:55:54 2025
+[*] Sat Apr  5 12:38:27 2025
 [*]
-[dumpfile] "/Users/wanghley/Workspace/Projects/CPU/FPGA-CPU/test_files/output_files/control_no_bypass.vcd"
-[dumpfile_mtime] "Mon Mar 24 15:23:51 2025"
-[dumpfile_size] 2918760
+[dumpfile] "/Users/wanghley/Workspace/Projects/CPU/FPGA-CPU/test_files/output_files/misc_memory.vcd"
+[dumpfile_mtime] "Sat Apr  5 12:28:33 2025"
+[dumpfile_size] 1957123
 [savefile] "/Users/wanghley/Workspace/Projects/CPU/FPGA-CPU/validation/control_cpu_validation.gtkw.gtkw"
-[timestart] 3374000
+[timestart] 2124000
 [size] 1920 1147
 [pos] -1 -1
-*-17.706356 3840000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+*-14.706356 2153800 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 [markername] AA
 [markername] BB
 [markername] CC
@@ -55,7 +55,7 @@
 [sst_width] 255
 [signals_width] 454
 [sst_expanded] 1
-[sst_vpaned_height] 892
+[sst_vpaned_height] 667
 @24
 Wrapper_tb.CPU.PCout[31:0]
 Wrapper_tb.CPU.PCnext[31:0]
@@ -222,7 +222,7 @@ Wrapper_tb.CPU.jal
 Wrapper_tb.CPU.regfile_readB_rt_rd
 @1401200
 -CTRL
-@c00200
+@800200
 -Latches
 @28
 Wrapper_tb.CPU.IR_FD[31:0]
@@ -230,7 +230,7 @@ Wrapper_tb.CPU.IR_FD[31:0]
 Wrapper_tb.CPU.IR_DX[31:0]
 Wrapper_tb.CPU.IR_XM[31:0]
 Wrapper_tb.CPU.IR_MW[31:0]
-@1401200
+@1000200
 -Latches
 @c00200
 -ALU
@@ -263,235 +263,6 @@ Wrapper_tb.CPU.wren
 Wrapper_tb.CPU.dmem_out[31:0]
 @1401200
 -RAM
-@28
-Wrapper_tb.CPU.ctrl_writeEnable
-@c00200
--regfile
-@c00024
-Wrapper_tb.CPU.rd[4:0]
-@22
-Wrapper_tb.CPU.rs[4:0]
-@28
-(0)Wrapper_tb.CPU.rd[4:0]
-(1)Wrapper_tb.CPU.rd[4:0]
-(2)Wrapper_tb.CPU.rd[4:0]
-(3)Wrapper_tb.CPU.rd[4:0]
-(4)Wrapper_tb.CPU.rd[4:0]
-@1401200
--group_end
-@24
-Wrapper_tb.CPU.rs[4:0]
->55600
-Wrapper_tb.CPU.rt[4:0]
-@28
->0
-Wrapper_tb.CPU.ctrl_writeEnable
-@24
-Wrapper_tb.CPU.ctrl_writeReg[4:0]
-@420
->-12900
-Wrapper_tb.CPU.data_readRegA[31:0]
->0
-Wrapper_tb.CPU.data_readRegB[31:0]
-Wrapper_tb.CPU.data_writeReg[31:0]
-@c00420
-+{R1} Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-@28
-(0)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(1)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(2)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(3)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(4)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(5)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(6)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(7)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(8)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(9)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(10)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(11)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(12)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(13)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(14)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(15)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(16)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(17)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(18)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(19)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(20)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(21)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(22)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(23)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(24)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(25)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(26)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(27)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(28)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(29)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(30)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-(31)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-@1401200
--group_end
-@420
-+{R2} Wrapper_tb.RegisterFile.reg_write[2].r.q[31:0]
-+{R3} Wrapper_tb.RegisterFile.reg_write[3].r.q[31:0]
-+{R4} Wrapper_tb.RegisterFile.reg_write[4].r.q[31:0]
-@c00420
-+{R10} Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-@28
-(0)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(1)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(2)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(3)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(4)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(5)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(6)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(7)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(8)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(9)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(10)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(11)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(12)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(13)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(14)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(15)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(16)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(17)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(18)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(19)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(20)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(21)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(22)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(23)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(24)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(25)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(26)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(27)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(28)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(29)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(30)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-(31)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-@1401200
--group_end
-@c00420
-+{R11} Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-@28
-(0)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(1)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(2)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(3)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(4)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(5)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(6)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(7)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(8)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(9)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(10)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(11)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(12)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(13)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(14)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(15)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(16)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(17)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(18)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(19)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(20)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(21)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(22)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(23)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(24)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(25)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(26)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(27)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(28)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(29)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(30)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-(31)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-@1401200
--group_end
-@420
-+{R20} Wrapper_tb.RegisterFile.reg_write[20].r.q[31:0]
-+{R21} Wrapper_tb.RegisterFile.reg_write[21].r.q[31:0]
-@c00420
-+{R23} Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-@28
-(0)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(1)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(2)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(3)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(4)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(5)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(6)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(7)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(8)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(9)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(10)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(11)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(12)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(13)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(14)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(15)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(16)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(17)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(18)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(19)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(20)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(21)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(22)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(23)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(24)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(25)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(26)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(27)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(28)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(29)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(30)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-(31)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-@1401200
--group_end
-@420
-+{R30} Wrapper_tb.RegisterFile.reg_write[30].r.q[31:0]
-@c00024
-+{R31} Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-@28
-(0)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(1)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(2)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(3)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(4)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(5)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(6)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(7)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(8)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(9)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(10)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(11)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(12)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(13)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(14)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(15)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(16)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(17)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(18)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(19)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(20)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(21)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(22)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(23)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(24)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(25)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(26)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(27)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(28)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(29)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(30)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-(31)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-@1401200
--group_end
--regfile
-@420
-Wrapper_tb.CPU.A_DX[31:0]
-Wrapper_tb.CPU.B_DX[31:0]
 @c00200
 -branch control
 @28
@@ -506,38 +277,13 @@ Wrapper_tb.CPU.branchPC_calculated[31:0]
 Wrapper_tb.CPU.pc_stall
 @1401200
 -branch control
-@24
-Wrapper_tb.CPU.exception[31:0]
-@28
-Wrapper_tb.CPU.CONTROL_XM[31:0]
-@22
-Wrapper_tb.CPU.O_XM[31:0]
-Wrapper_tb.CPU.exception[31:0]
-@800200
+@c00200
 -multdiv
 @28
 [color] 3
 Wrapper_tb.CPU.multdiv_hazard
-@1000200
+@1401200
 -multdiv
-@28
-Wrapper_tb.CPU.ctrl_multidiv_datardy
-Wrapper_tb.CPU.multidiv_exception_int_dx
-Wrapper_tb.CPU.multdiv_excp_dex
-@22
-Wrapper_tb.CPU.EXC.alu_exception[31:0]
-Wrapper_tb.CPU.EXC.exception[31:0]
-@28
-Wrapper_tb.CPU.EXC.is_alu_exception
-Wrapper_tb.CPU.EXC.multidiv_exception
-@22
-+{R30} Wrapper_tb.RegisterFile.reg_write[30].r.q[31:0]
-@24
-Wrapper_tb.CPU.PCout[31:0]
-Wrapper_tb.CPU.PCnext[31:0]
-@28
-Wrapper_tb.CPU.clock
-Wrapper_tb.CPU.q_imem[31:0]
 @c00200
 -CTRL
 @c00028
@@ -698,7 +444,7 @@ Wrapper_tb.CPU.jal
 Wrapper_tb.CPU.regfile_readB_rt_rd
 @1401200
 -CTRL
-@800200
+@c00200
 -Latches
 @28
 Wrapper_tb.CPU.IR_FD[31:0]
@@ -706,7 +452,7 @@ Wrapper_tb.CPU.IR_FD[31:0]
 Wrapper_tb.CPU.IR_DX[31:0]
 Wrapper_tb.CPU.IR_XM[31:0]
 Wrapper_tb.CPU.IR_MW[31:0]
-@1000200
+@1401200
 -Latches
 @c00200
 -ALU
@@ -722,9 +468,9 @@ Wrapper_tb.CPU.ne_ALU
 Wrapper_tb.CPU.lessThan_ALU
 @1401200
 -ALU
-@c00200
+@800200
 -RAM
-@22
+@24
 Wrapper_tb.CPU.address_dmem[31:0]
 @420
 Wrapper_tb.CPU.data[31:0]
@@ -734,14 +480,14 @@ Wrapper_tb.CPU.B_DX[31:0]
 @28
 Wrapper_tb.CPU.wren
 @420
+>-4000
 Wrapper_tb.CPU.dmem_out[31:0]
-@1401200
+@1000200
+>0
 -RAM
-@28
-Wrapper_tb.CPU.ctrl_writeEnable
-@800201
+@c00200
 -regfile
-@c00025
+@c00024
 Wrapper_tb.CPU.rd[4:0]
 @22
 Wrapper_tb.CPU.rs[4:0]
@@ -751,24 +497,24 @@ Wrapper_tb.CPU.rs[4:0]
 (2)Wrapper_tb.CPU.rd[4:0]
 (3)Wrapper_tb.CPU.rd[4:0]
 (4)Wrapper_tb.CPU.rd[4:0]
-@1401201
+@1401200
 -group_end
-@25
+@24
 Wrapper_tb.CPU.rs[4:0]
 >55600
 Wrapper_tb.CPU.rt[4:0]
-@29
+@28
 >0
 Wrapper_tb.CPU.ctrl_writeEnable
-@25
+@24
 Wrapper_tb.CPU.ctrl_writeReg[4:0]
-@421
+@420
 >-12900
 Wrapper_tb.CPU.data_readRegA[31:0]
 >0
 Wrapper_tb.CPU.data_readRegB[31:0]
 Wrapper_tb.CPU.data_writeReg[31:0]
-@c00421
+@c00420
 +{R1} Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
 @28
 (0)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
@@ -803,13 +549,13 @@ Wrapper_tb.CPU.data_writeReg[31:0]
 (29)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
 (30)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
 (31)Wrapper_tb.RegisterFile.reg_write[1].r.q[31:0]
-@1401201
+@1401200
 -group_end
-@421
+@420
 +{R2} Wrapper_tb.RegisterFile.reg_write[2].r.q[31:0]
 +{R3} Wrapper_tb.RegisterFile.reg_write[3].r.q[31:0]
 +{R4} Wrapper_tb.RegisterFile.reg_write[4].r.q[31:0]
-@c00421
+@c00420
 +{R10} Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
 @28
 (0)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
@@ -844,9 +590,9 @@ Wrapper_tb.CPU.data_writeReg[31:0]
 (29)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
 (30)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
 (31)Wrapper_tb.RegisterFile.reg_write[10].r.q[31:0]
-@1401201
+@1401200
 -group_end
-@c00421
+@c00420
 +{R11} Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
 @28
 (0)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
@@ -881,12 +627,12 @@ Wrapper_tb.CPU.data_writeReg[31:0]
 (29)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
 (30)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
 (31)Wrapper_tb.RegisterFile.reg_write[11].r.q[31:0]
-@1401201
+@1401200
 -group_end
-@421
+@420
 +{R19} Wrapper_tb.RegisterFile.reg_write[19].r.q[31:0]
 +{R20} Wrapper_tb.RegisterFile.reg_write[20].r.q[31:0]
-@c00421
+@c00420
 +{R21} Wrapper_tb.RegisterFile.reg_write[21].r.q[31:0]
 @28
 (0)Wrapper_tb.RegisterFile.reg_write[21].r.q[31:0]
@@ -921,11 +667,11 @@ Wrapper_tb.CPU.data_writeReg[31:0]
 (29)Wrapper_tb.RegisterFile.reg_write[21].r.q[31:0]
 (30)Wrapper_tb.RegisterFile.reg_write[21].r.q[31:0]
 (31)Wrapper_tb.RegisterFile.reg_write[21].r.q[31:0]
-@1401201
+@1401200
 -group_end
-@421
+@420
 +{R22} Wrapper_tb.RegisterFile.reg_write[22].r.q[31:0]
-@c00421
+@c00420
 +{R23} Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
 @28
 (0)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
@@ -960,11 +706,11 @@ Wrapper_tb.CPU.data_writeReg[31:0]
 (29)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
 (30)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
 (31)Wrapper_tb.RegisterFile.reg_write[23].r.q[31:0]
-@1401201
+@1401200
 -group_end
-@421
+@420
 +{R30} Wrapper_tb.RegisterFile.reg_write[30].r.q[31:0]
-@c00025
+@c00024
 +{R31} Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
 @28
 (0)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
@@ -999,13 +745,9 @@ Wrapper_tb.CPU.data_writeReg[31:0]
 (29)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
 (30)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
 (31)Wrapper_tb.RegisterFile.reg_write[31].r.q[31:0]
-@1401201
+@1401200
 -group_end
-@1000201
 -regfile
-@420
-Wrapper_tb.CPU.A_DX[31:0]
-Wrapper_tb.CPU.B_DX[31:0]
 @c00200
 -branch control
 @28
@@ -1020,21 +762,18 @@ Wrapper_tb.CPU.branchPC_calculated[31:0]
 Wrapper_tb.CPU.pc_stall
 @1401200
 -branch control
-@24
-Wrapper_tb.CPU.PC_DX[31:0]
-Wrapper_tb.CPU.imm_DX[31:0]
 @28
-Wrapper_tb.CPU.branch_mispredicted
-@22
-Wrapper_tb.CPU.branch_target[31:0]
-Wrapper_tb.CPU.bex_target[31:0]
-Wrapper_tb.CPU.target[26:0]
-Wrapper_tb.CPU.TARGET_DX[31:0]
-Wrapper_tb.CPU.TARGET_XM[31:0]
-Wrapper_tb.CPU.TARGET_MW[31:0]
+Wrapper_tb.CPU.clock
+@800200
+-byp
+@29
+Wrapper_tb.CPU.BYP.byp_b_dx[1:0]
 @28
-Wrapper_tb.CPU.branch_condition_met
-Wrapper_tb.CPU.is_bex_taken
-Wrapper_tb.CPU.ctrl_in[31:0]
+Wrapper_tb.CPU.BYP.byp_jr[1:0]
+Wrapper_tb.CPU.BYP.byp_selALU_A[1:0]
+Wrapper_tb.CPU.BYP.byp_selALU_B[1:0]
+Wrapper_tb.CPU.BYP.byp_selMem_data
+@1000200
+-byp
 [pattern_trace] 1
 [pattern_trace] 0
