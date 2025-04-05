@@ -11,12 +11,12 @@ fi
 
 # Create temporary directory for staging
 tmp_dir=$(mktemp -d)
-trap 'rm -rf "$tmp_dir"; echo "🧹 Temporary files cleaned up due to an error."' EXIT
+# Don't clean up on EXIT - we'll do it manually at the end
+trap 'echo "🧹 Error occurred. Temporary files at $tmp_dir"' ERR
 
 # Ensure the temp directory exists
 echo "📦 Preparing temporary directory for staging files..."
 mkdir -p "$tmp_dir"
-
 echo "📦 Backing up required files for reorganization..."
 
 # ---------- Copy Verilog files from main/proc/ to src/ ----------
@@ -34,13 +34,13 @@ fi
 # ---------- Copy submodules/ as-is ----------
 if [ -d "submodules" ]; then
   echo "📁 Copying submodules/..."
-  rsync -a --exclude='.git' submodules/ "$tmp_dir/submodules/"
+  rsync -av --exclude='.git' submodules/ "$tmp_dir/submodules/"
 fi
 
 # ---------- Copy validation/ as-is ----------
 if [ -d "validation" ]; then
   echo "📁 Copying validation/..."
-  rsync -a --exclude='.git' validation/ "$tmp_dir/validation/"
+  rsync -av --exclude='.git' validation/ "$tmp_dir/validation/"
 fi
 
 # ---------- Copy constraints.xdc to root ----------
@@ -77,14 +77,18 @@ fi
 # ---------- Rename test_files to tests ----------
 if [ -d "test_files" ]; then
   echo "📁 Renaming test_files/ to tests/..."
-  rsync -a --exclude='.git' test_files/ "$tmp_dir/tests/"
+  rsync -av --exclude='.git' test_files/ "$tmp_dir/tests/"
 else
   echo "⚠️ Warning: test_files/ not found."
 fi
 
 # ---------- Backup .git directory ----------
 echo "🔒 Backing up .git directory..."
-rsync -a .git/ "$tmp_dir/.git/"
+rsync -av .git/ "$tmp_dir/.git/"
+
+# ---------- List all files in temp directory before cleaning ----------
+echo "📋 Contents of temporary directory:"
+ls -la "$tmp_dir"
 
 # ---------- Clean main branch but preserve .git ----------
 echo "🧹 Cleaning main branch (preserving .git)..."
@@ -92,7 +96,11 @@ find . -mindepth 1 -maxdepth 1 -not -path "./.git" -exec rm -rf {} \;
 
 # ---------- Restore all staged content ----------
 echo "♻️ Restoring reorganized content to main branch..."
-rsync -a "$tmp_dir/" ./
+rsync -av "$tmp_dir/" ./
+
+# ---------- List all files after restoring ----------
+echo "📋 Contents after restoration:"
+ls -la
 
 # ---------- Commit changes ----------
 echo "✅ Staging and committing reorganization..."
@@ -104,4 +112,7 @@ else
   echo "📤 You can push changes with: git push origin main"
 fi
 
+# ---------- Clean up the temporary directory ----------
+rm -rf "$tmp_dir"
+echo "🧹 Temporary files cleaned up."
 echo "🎉 Repository reorganization completed successfully!"
