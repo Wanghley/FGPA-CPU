@@ -1,6 +1,5 @@
 #!/bin/bash
 set -euo pipefail
-
 echo "🚀 Starting reorganization on main branch"
 
 # Make sure we are on main
@@ -54,7 +53,7 @@ fi
 
 # ---------- Copy README.md to root ----------
 if [ -f "README.md" ]; then
-  echo "📄 Copying main/README.md to root..."
+  echo "📄 Copying README.md to root..."
   cp README.md "$tmp_dir/README.md"
 else
   echo "⚠️ Warning: README.md not found."
@@ -62,13 +61,14 @@ fi
 
 # ---------- Copy .gitignore and .gitmodules to root ----------
 if [ -f ".gitignore" ]; then
-  echo "📄 Copying main/.gitignore to root..."
+  echo "📄 Copying .gitignore to root..."
   cp .gitignore "$tmp_dir/.gitignore"
 else
   echo "⚠️ Warning: .gitignore not found."
 fi
+
 if [ -f ".gitmodules" ]; then
-  echo "📄 Copying main/.gitmodules to root..."
+  echo "📄 Copying .gitmodules to root..."
   cp .gitmodules "$tmp_dir/.gitmodules"
 else
   echo "⚠️ Warning: .gitmodules not found."
