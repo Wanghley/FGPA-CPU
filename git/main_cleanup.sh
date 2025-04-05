@@ -48,6 +48,29 @@ else
   echo "⚠️ Warning: constraints.xdc not found."
 fi
 
+# ---------- Copy README.md to root ----------
+if [ -f "main/README.md" ]; then
+  echo "📄 Copying main/README.md to root..."
+  cp main/README.md "$tmp_dir/README.md"
+else
+  echo "⚠️ Warning: README.md not found."
+fi
+
+# ---------- Copy .gitignore and .gitmodules to root ----------
+if [ -f "main/.gitignore" ]; then
+  echo "📄 Copying main/.gitignore to root..."
+  cp main/.gitignore "$tmp_dir/.gitignore"
+else
+  echo "⚠️ Warning: .gitignore not found."
+fi
+if [ -f "main/.gitmodules" ]; then
+  echo "📄 Copying main/.gitmodules to root..."
+  cp main/.gitmodules "$tmp_dir/.gitmodules"
+else
+  echo "⚠️ Warning: .gitmodules not found."
+fi
+
+
 # ---------- Rename test_files to tests ----------
 if [ -d "test_files" ]; then
   echo "📁 Renaming test_files/ to tests/..."
