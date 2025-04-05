@@ -150,13 +150,13 @@ module bypass (ctrl_xm, ctrl_dx, ctrl_mw, byp_selALU_A, byp_selALU_B, byp_selMem
     wire [4:0] rd_byp_dx = ctrl_dx[31:27]; // Destination register for SW
     wire [4:0] rt_byp_dx = IR_DX[26:22]; // Source register for SW
     assign byp_b_dx = (is_sw_dx) ? 
-                        (  // SW instruction special case
-                            (rt_dx == 5'd0) ? 2'b10 :  // $r0 always from regfile
-                            (rt_dx == ctrl_xm[31:27] && ctrl_xm[15]) ? 2'b00 :
-                            (rt_dx == ctrl_mw[31:27] && ctrl_mw[15]) ? 2'b01 :
-                            2'b10  // Default to register file
-                        ) :
-                        2'b10; // Default to register file
+                    (  // SW instruction special case
+                        (IR_DX[26:22] == 5'd0) ? 2'b10 :  // $r0 always from regfile
+                        (IR_DX[26:22] == ctrl_xm[31:27] && ctrl_xm[15]) ? 2'b00 :  // Bypass from XM
+                        (IR_DX[26:22] == ctrl_mw[31:27] && ctrl_mw[15]) ? 2'b01 :  // Bypass from MW
+                        2'b10  // Default to register file
+                    ) :
+                    2'b10; // Default to register file
     
 
 endmodule
