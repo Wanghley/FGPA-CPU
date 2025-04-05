@@ -14,6 +14,10 @@ fi
 tmp_dir=$(mktemp -d)
 trap 'rm -rf "$tmp_dir"; echo "🧹 Temporary files cleaned up due to an error."' EXIT
 
+# Ensure the temp directory exists
+echo "📦 Preparing temporary directory for staging files..."
+mkdir -p "$tmp_dir"
+
 echo "📦 Backing up required files for reorganization..."
 
 # ---------- Copy Verilog files from main/proc/ to src/ ----------
@@ -31,13 +35,13 @@ fi
 # ---------- Copy submodules/ as-is ----------
 if [ -d "submodules" ]; then
   echo "📁 Copying submodules/..."
-  cp -r submodules "$tmp_dir/"
+  rsync -a --exclude='.git' submodules/ "$tmp_dir/submodules/"
 fi
 
 # ---------- Copy validation/ as-is ----------
 if [ -d "validation" ]; then
   echo "📁 Copying validation/..."
-  cp -r validation "$tmp_dir/"
+  rsync -a --exclude='.git' validation/ "$tmp_dir/validation/"
 fi
 
 # ---------- Copy constraints.xdc to root ----------
@@ -49,39 +53,38 @@ else
 fi
 
 # ---------- Copy README.md to root ----------
-if [ -f "main/README.md" ]; then
+if [ -f "README.md" ]; then
   echo "📄 Copying main/README.md to root..."
-  cp main/README.md "$tmp_dir/README.md"
+  cp README.md "$tmp_dir/README.md"
 else
   echo "⚠️ Warning: README.md not found."
 fi
 
 # ---------- Copy .gitignore and .gitmodules to root ----------
-if [ -f "main/.gitignore" ]; then
+if [ -f ".gitignore" ]; then
   echo "📄 Copying main/.gitignore to root..."
-  cp main/.gitignore "$tmp_dir/.gitignore"
+  cp .gitignore "$tmp_dir/.gitignore"
 else
   echo "⚠️ Warning: .gitignore not found."
 fi
-if [ -f "main/.gitmodules" ]; then
+if [ -f ".gitmodules" ]; then
   echo "📄 Copying main/.gitmodules to root..."
-  cp main/.gitmodules "$tmp_dir/.gitmodules"
+  cp .gitmodules "$tmp_dir/.gitmodules"
 else
   echo "⚠️ Warning: .gitmodules not found."
 fi
 
-
 # ---------- Rename test_files to tests ----------
 if [ -d "test_files" ]; then
   echo "📁 Renaming test_files/ to tests/..."
-  cp -r test_files "$tmp_dir/tests"
+  rsync -a --exclude='.git' test_files/ "$tmp_dir/tests/"
 else
   echo "⚠️ Warning: test_files/ not found."
 fi
 
 # ---------- Backup .git directory ----------
 echo "🔒 Backing up .git directory..."
-cp -r .git "$tmp_dir/.git"
+rsync -a .git/ "$tmp_dir/.git/"
 
 # ---------- Clean main branch but preserve .git ----------
 echo "🧹 Cleaning main branch (preserving .git)..."
@@ -89,7 +92,7 @@ find . -mindepth 1 -maxdepth 1 -not -path "./.git" -exec rm -rf {} \;
 
 # ---------- Restore all staged content ----------
 echo "♻️ Restoring reorganized content to main branch..."
-cp -r "$tmp_dir/"* ./
+rsync -a "$tmp_dir/" ./
 
 # ---------- Commit changes ----------
 echo "✅ Staging and committing reorganization..."
