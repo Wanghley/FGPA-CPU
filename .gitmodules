@@ -1,9 +1,0 @@
-[submodule "submodules/multdiv"]
-	path = submodules/multdiv
-	url = git@github.com:Wanghley/VeriMultDiv.git
-[submodule "submodules/alu"]
-	path = submodules/alu
-	url = git@github.com:Wanghley/VeriALU.git
-[submodule "submodules/regfile"]
-	path = submodules/regfile
-	url = git@github.com:Wanghley/VeriRegFile.git
