@@ -2,7 +2,8 @@ module regfile (
 	clock,
 	ctrl_writeEnable, ctrl_reset, ctrl_writeReg,
 	ctrl_readRegA, ctrl_readRegB, data_writeReg,
-	data_readRegA, data_readRegB
+	data_readRegA, data_readRegB,
+    LED
 );
 
 	input clock, ctrl_writeEnable, ctrl_reset;
@@ -10,6 +11,13 @@ module regfile (
 	input [31:0] data_writeReg;
 
 	output [31:0] data_readRegA, data_readRegB;
+
+    output [15:0] LED;
+
+    // Internal signals
+    wire [31:0] data_readRegA, data_readRegB; // Data outputs for read registers
+    wire [31:0] data_writeReg; // Data input for write register
+    wire [4:0] ctrl_writeReg, ctrl_readRegA, ctrl_readRegB; // Control signals for register selection
 
 	wire [31:0] wrt_en; // Write enable for each register
     wire [31:0] regs [31:0]; // Array of 32 registers, 32-bits each
@@ -61,6 +69,11 @@ module regfile (
                 .en(enable_wire),
                 .clr(ctrl_reset)
             );
+
+            // Assign LED to the first 16 bits of the register 1
+            if (i == 1) begin
+                assign LED = regs[i][15:0]; // Assign the first 16 bits of register 1 to LED
+            end
         end
     endgenerate
 
