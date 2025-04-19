@@ -1,13 +1,17 @@
-## This file is a general .xdc for the Nexys A7-100T
-## To use it in a project:
-## - uncomment the lines corresponding to used pins
-## - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
+## Nexys A7-100T Constraint file
+## Author: Wanghley Soares Martins
+## Date: 2025-04-19
+
+## -------------------------------------------------------
 
 ## Clock signal
 set_property -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33} [get_ports clock]
 #create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports clk_100mhz]
 #create_clock -period 20.000 -name sys_clk_pin -waveform {0.000 10.000} -add [get_ports clk_50mhz]
 create_clock -period 28.5710 -name sys_clk_pin -waveform {0.000 14.286} -add [get_ports clock]
+
+## Reset
+set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33} [get_ports reset]
 
 
 ##Switches
