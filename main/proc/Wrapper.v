@@ -24,7 +24,7 @@
  *
  **/
 
-module Wrapper (clock, reset, vauxn11, vauxp11, vauxn3, vauxp3);
+module Wrapper (clock, reset, vauxn11, vauxp11, vauxn3, vauxp3, LED);
 	input clock, reset;
 	input vauxn3, vauxp3;        // EMG input (VAUX3)
 	input vauxn11, vauxp11;    // ECG input (VAUX11)
@@ -34,6 +34,9 @@ module Wrapper (clock, reset, vauxn11, vauxp11, vauxn3, vauxp3);
 	wire[31:0] instAddr, instData, 
 		rData, regA, regB,
 		memAddr, memDataIn, memDataOut;
+
+	// LED output
+	output [15:0] LED;
 
 
 	// ADD YOUR MEMORY FILE HERE
@@ -61,7 +64,8 @@ module Wrapper (clock, reset, vauxn11, vauxp11, vauxn3, vauxp3);
 		.vauxn3(vauxn3), .vauxp3(vauxp3),        // EMG input (VAUX3)
 		.vauxn11(vauxn11), .vauxp11(vauxp11),    // ECG input (VAUX11)
 		.emg_out(emg_out),         // Output for EMG
-		.ecg_out(ecg_out)          // Output for ECG
+		.ecg_out(ecg_out),          // Output for ECG
+		.reset(reset)
 	);
 
 	// RAM addresses reserved for ADC samples
@@ -79,7 +83,7 @@ module Wrapper (clock, reset, vauxn11, vauxp11, vauxn3, vauxp3);
 		.ctrl_writeEnable(rwe), .ctrl_reset(reset), 
 		.ctrl_writeReg(rd),
 		.ctrl_readRegA(rs1), .ctrl_readRegB(rs2), 
-		.data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB));
+		.data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB),.LED(LED));
 						
 	// Processor Memory (RAM)
 	RAM ProcMem(.clk(clock), 
