@@ -70,7 +70,7 @@ module Wrapper (clock, reset, vauxn11, vauxp11, vauxn3, vauxp3, LED);
 
 	// RAM addresses reserved for ADC samples
 	localparam EMG_ADDR = 12'hC7F; // 0x00000FFC
-	localparam ECG_ADDR = 12'hFFE; // 0x00000FF8
+	localparam ECG_ADDR = 12'h801; // 0x00000FF8
 	
 	// Instruction Memory (ROM)
 	ROM #(.MEMFILE({INSTR_FILE, ".mem"}))
@@ -84,7 +84,47 @@ module Wrapper (clock, reset, vauxn11, vauxp11, vauxn3, vauxp3, LED);
 		.ctrl_writeReg(rd),
 		.ctrl_readRegA(rs1), .ctrl_readRegB(rs2), 
 		.data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB),.LED(LED));
-						
+	
+	// -------------------------- ADC MUX --------------------------
+	// MUX to select between EMG and ECG data for writing to RAM
+	reg channel_select;
+	reg [31:0] adc_data_mux;
+	reg [11:0] adc_addr_mux;
+
+	// Sample counter for timing (100 samples per second)
+	// This is a 5ms sample interval at 35MHz clock
+	reg [17:0] sample_counter;
+	reg sample_enable;
+	localparam SAMPLE_INTERVAL = 18'd175000;  // 5 ms @ 35MHz
+
+	always @(posedge clock or posedge reset) begin
+		if (reset) begin
+			sample_counter <= 18'd0;
+			sample_enable <= 1'b0;
+			channel_select <= 1'b0;
+		end else begin
+			if (sample_counter >= SAMPLE_INTERVAL - 1) begin
+				sample_counter <= 18'd0;
+				sample_enable <= 1'b1;
+				channel_select <= ~channel_select; // toggle between EMG and ECG
+			end else begin
+				sample_counter <= sample_counter + 1;
+				sample_enable <= 1'b0;
+			end
+		end
+	end
+
+
+	always @(*) begin
+		if (channel_select == 1'b0) begin
+			adc_data_mux = emg_out;
+			adc_addr_mux = EMG_ADDR;
+		end else begin
+			adc_data_mux = ecg_out;
+			adc_addr_mux = ECG_ADDR;
+		end
+	end
+
 	// Processor Memory (RAM)
 	RAM ProcMem(.clk(clock), 
 		.wEn(mwe), 
@@ -93,9 +133,10 @@ module Wrapper (clock, reset, vauxn11, vauxp11, vauxn3, vauxp3, LED);
 		.dataOut(memDataOut),
 
 		// ADC Port (write-only)
-		.adc_wEn(1'b1),
-		.adc_addr(EMG_ADDR),
-		.adc_dataIn(emg_out)
+		.adc_wEn(sample_enable),
+		.adc_addr(adc_addr_mux),
+		.adc_dataIn(adc_data_mux)
+
 		);
 
 endmodule
