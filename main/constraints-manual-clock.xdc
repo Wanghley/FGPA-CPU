@@ -3,11 +3,13 @@
 ## - uncomment the lines corresponding to used pins
 ## - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
 
-## Clock signal
-set_property -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33} [get_ports clock]
-#create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports clk_100mhz]
-#create_clock -period 20.000 -name sys_clk_pin -waveform {0.000 10.000} -add [get_ports clk_50mhz]
-create_clock -period 28.5710 -name sys_clk_pin -waveform {0.000 14.286} -add [get_ports clock]
+## Using BTNU as manual clock signal (button press = clock pulse)
+set_property -dict { PACKAGE_PIN M18   IOSTANDARD LVCMOS33 } [get_ports clock]; #IO_L4N_T0_D05_14 Sch=btnu
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clock];  #This allows using a button as clock
+
+## Note: The original clock pin (E3) is commented out since we're using BTNU instead
+# set_property -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33} [get_ports clock]
+# create_clock -period 28.5710 -name sys_clk_pin -waveform {0.000 14.286} -add [get_ports clock]
 
 
 ##Switches
@@ -47,7 +49,8 @@ set_property -dict { PACKAGE_PIN V12   IOSTANDARD LVCMOS33 } [get_ports { LED[14
 set_property -dict { PACKAGE_PIN V11   IOSTANDARD LVCMOS33 } [get_ports { LED[15] }]; #IO_L21N_T3_DQS_A06_D22_14 Sch=led[15]
 
 ##Buttons
-set_property -dict { PACKAGE_PIN M18   IOSTANDARD LVCMOS33 } [get_ports { BTNU }]; #IO_L4N_T0_D05_14 Sch=btnu
+# BTNU is now used as clock, so it's commented out here
+# set_property -dict { PACKAGE_PIN M18   IOSTANDARD LVCMOS33 } [get_ports { BTNU }]; #IO_L4N_T0_D05_14 Sch=btnu
 
 
 ## XADC pins
