@@ -1,6 +1,8 @@
 # Clock
-set_property -dict { PACKAGE_PIN E3 IOSTANDARD LVCMOS33 } [get_ports { CLK100MHZ }];
-create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { CLK100MHZ }];
+set_property -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33} [get_ports clk_35mhz]
+#create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports clk_100mhz]
+#create_clock -period 20.000 -name sys_clk_pin -waveform {0.000 10.000} -add [get_ports clk_50mhz]
+create_clock -period 28.5710 -name sys_clk_pin -waveform {0.000 14.286} -add [get_ports clk_35mhz]
 
 # Switches
 set_property -dict { PACKAGE_PIN J15 IOSTANDARD LVCMOS33 } [get_ports { BTN0 }];

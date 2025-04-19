@@ -4,10 +4,10 @@
 ## - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
 
 ## Clock signal
-set_property -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33} [get_ports clk_35mhz]
+set_property -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33} [get_ports clock]
 #create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports clk_100mhz]
 #create_clock -period 20.000 -name sys_clk_pin -waveform {0.000 10.000} -add [get_ports clk_50mhz]
-create_clock -period 28.5710 -name sys_clk_pin -waveform {0.000 14.286} -add [get_ports clk_35mhz]
+create_clock -period 28.5710 -name sys_clk_pin -waveform {0.000 14.286} -add [get_ports clock]
 
 
 ##Switches
@@ -48,3 +48,14 @@ set_property -dict { PACKAGE_PIN V11   IOSTANDARD LVCMOS33 } [get_ports { LED[15
 
 ##Buttons
 set_property -dict { PACKAGE_PIN M18   IOSTANDARD LVCMOS33 } [get_ports { BTNU }]; #IO_L4N_T0_D05_14 Sch=btnu
+
+
+## XADC pins
+set_property -dict { PACKAGE_PIN A14 IOSTANDARD LVCMOS33 } [get_ports { vauxn3 }];
+set_property -dict { PACKAGE_PIN A13 IOSTANDARD LVCMOS33 } [get_ports { vauxp3 }];
+# set_property -dict { PACKAGE_PIN A16 IOSTANDARD LVCMOS33 } [get_ports { vauxn10 }];
+# set_property -dict { PACKAGE_PIN A15 IOSTANDARD LVCMOS33 } [get_ports { vauxp10 }];
+# set_property -dict { PACKAGE_PIN B17 IOSTANDARD LVCMOS33 } [get_ports { vauxn2 }];
+# set_property -dict { PACKAGE_PIN B16 IOSTANDARD LVCMOS33 } [get_ports { vauxp2 }];
+set_property -dict { PACKAGE_PIN A18 IOSTANDARD LVCMOS33 } [get_ports { vauxn11 }];
+set_property -dict { PACKAGE_PIN B18 IOSTANDARD LVCMOS33 } [get_ports { vauxp11 }];

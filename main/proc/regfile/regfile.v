@@ -70,11 +70,9 @@ module regfile (
                 .clr(ctrl_reset)
             );
 
-            // Assign LED to the first 16 bits of the register 1
-            if (i == 1) begin
-                assign LED = regs[i][15:0]; // Assign the first 16 bits of register 1 to LED
-            end
         end
     endgenerate
+
+    assign LED = regs[8][15:0]; // Assign the first 16 bits of register 1 to LED
 
 endmodule

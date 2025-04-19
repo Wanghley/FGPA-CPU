@@ -24,8 +24,10 @@
  *
  **/
 
-module Wrapper (clock, reset);
+module Wrapper (clock, reset, vauxn11, vauxp11, vauxn3, vauxp3);
 	input clock, reset;
+	input vauxn3, vauxp3;        // EMG input (VAUX3)
+	input vauxn11, vauxp11;    // ECG input (VAUX11)
 
 	wire rwe, mwe;
 	wire[4:0] rd, rs1, rs2;
@@ -35,7 +37,7 @@ module Wrapper (clock, reset);
 
 
 	// ADD YOUR MEMORY FILE HERE
-	localparam INSTR_FILE = "addi";
+	localparam INSTR_FILE = "emg-test";
 	
 	// Main Processing Unit
 	processor CPU(.clock(clock), .reset(reset), 
@@ -51,6 +53,20 @@ module Wrapper (clock, reset);
 		// RAM
 		.wren(mwe), .address_dmem(memAddr), 
 		.data(memDataIn), .q_dmem(memDataOut)); 
+
+	// EMG and ECG ADC Capture
+	wire [31:0] emg_out, ecg_out;
+	adc_data_capture ADC_Capture(
+		.clk(clock),
+		.vauxn3(vauxn3), .vauxp3(vauxp3),        // EMG input (VAUX3)
+		.vauxn11(vauxn11), .vauxp11(vauxp11),    // ECG input (VAUX11)
+		.emg_out(emg_out),         // Output for EMG
+		.ecg_out(ecg_out)          // Output for ECG
+	);
+
+	// RAM addresses reserved for ADC samples
+	localparam EMG_ADDR = 12'hC7F; // 0x00000FFC
+	localparam ECG_ADDR = 12'hFFE; // 0x00000FF8
 	
 	// Instruction Memory (ROM)
 	ROM #(.MEMFILE({INSTR_FILE, ".mem"}))
@@ -70,6 +86,12 @@ module Wrapper (clock, reset);
 		.wEn(mwe), 
 		.addr(memAddr[11:0]), 
 		.dataIn(memDataIn), 
-		.dataOut(memDataOut));
+		.dataOut(memDataOut),
+
+		// ADC Port (write-only)
+		.adc_wEn(1'b1),
+		.adc_addr(EMG_ADDR),
+		.adc_dataIn(emg_out)
+		);
 
 endmodule
