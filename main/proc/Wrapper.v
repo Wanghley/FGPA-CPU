@@ -1,142 +1,139 @@
 `timescale 1ns / 1ps
+
 /**
- * 
- * READ THIS DESCRIPTION:
+ * Wrapper module for integrating processor, register file, memory,
+ * and XADC sampling of EMG and ECG signals.
  *
- * This is the Wrapper module that will serve as the header file combining your processor, 
- * RegFile and Memory elements together.
- *
- * This file will be used to generate the bitstream to upload to the FPGA.
- * We have provided a sibling file, Wrapper_tb.v so that you can test your processor's functionality.
- * 
- * We will be using our own separate Wrapper_tb.v to test your code. You are allowed to make changes to the Wrapper files 
- * for your own individual testing, but we expect your final processor.v and memory modules to work with the 
- * provided Wrapper interface.
- * 
- * Refer to Lab 5 documents for detailed instructions on how to interface 
- * with the memory elements. Each imem and dmem modules will take 12-bit 
- * addresses and will allow for storing of 32-bit values at each address. 
- * Each memory module should receive a single clock. At which edges, is 
- * purely a design choice (and thereby up to you). 
- * 
- * You must change line 36 to add the memory file of the test you created using the assembler
- * For example, you would add sample inside of the quotes on line 38 after assembling sample.s
- *
- **/
+ * IMPORTANT: Set your instruction memory file name below at line ~40
+ */
 
-module Wrapper (clock, reset, vauxn11, vauxp11, vauxn3, vauxp3, LED);
-	input clock, reset;
-	input vauxn3, vauxp3;        // EMG input (VAUX3)
-	input vauxn11, vauxp11;    // ECG input (VAUX11)
+module Wrapper (
+    input clock,
+    input reset,
+    input vauxn3, vauxp3,         // EMG input (VAUX3)
+    input vauxn11, vauxp11,       // ECG input (VAUX11)
+    output [15:0] LED
+);
 
-	wire rwe, mwe;
-	wire[4:0] rd, rs1, rs2;
-	wire[31:0] instAddr, instData, 
-		rData, regA, regB,
-		memAddr, memDataIn, memDataOut;
+    // ===================== //
+    // === Control Wires === //
+    // ===================== //
+    wire rwe, mwe;
+    wire [4:0] rd, rs1, rs2;
+    wire [31:0] instAddr, instData;
+    wire [31:0] rData, regA, regB;
+    wire [31:0] memAddr, memDataIn, memDataOut;
 
-	// LED output
-	output [15:0] LED;
+    // =============================== //
+    // === Instruction Memory File === //
+    // =============================== //
+    localparam INSTR_FILE = "emg-test";
 
+    // ============================= //
+    // === Instantiate Processor === //
+    // ============================= //
+    processor CPU (
+        .clock(clock), .reset(reset),
+        .address_imem(instAddr), .q_imem(instData),
+        .ctrl_writeEnable(rwe), .ctrl_writeReg(rd),
+        .ctrl_readRegA(rs1), .ctrl_readRegB(rs2),
+        .data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB),
+        .wren(mwe), .address_dmem(memAddr),
+        .data(memDataIn), .q_dmem(memDataOut)
+    );
 
-	// ADD YOUR MEMORY FILE HERE
-	localparam INSTR_FILE = "emg-test";
-	
-	// Main Processing Unit
-	processor CPU(.clock(clock), .reset(reset), 
-								
-		// ROM
-		.address_imem(instAddr), .q_imem(instData),
-									
-		// Regfile
-		.ctrl_writeEnable(rwe),     .ctrl_writeReg(rd),
-		.ctrl_readRegA(rs1),     .ctrl_readRegB(rs2), 
-		.data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB),
-									
-		// RAM
-		.wren(mwe), .address_dmem(memAddr), 
-		.data(memDataIn), .q_dmem(memDataOut)); 
+    // ============================ //
+    // === ADC Data Acquisition === //
+    // ============================ //
+    wire [31:0] emg_out, ecg_out;
+    adc_data_capture ADC_Capture (
+        .clk(clock), .reset(reset),
+        .vauxn3(vauxn3), .vauxp3(vauxp3),
+        .vauxn11(vauxn11), .vauxp11(vauxp11),
+        .emg_out(emg_out), .ecg_out(ecg_out)
+    );
 
-	// EMG and ECG ADC Capture
-	wire [31:0] emg_out, ecg_out;
-	adc_data_capture ADC_Capture(
-		.clk(clock),
-		.vauxn3(vauxn3), .vauxp3(vauxp3),        // EMG input (VAUX3)
-		.vauxn11(vauxn11), .vauxp11(vauxp11),    // ECG input (VAUX11)
-		.emg_out(emg_out),         // Output for EMG
-		.ecg_out(ecg_out),          // Output for ECG
-		.reset(reset)
-	);
+    // Reserved memory address base for ADC writes
+    localparam EMG_ADDR_BASE = 12'hC7F;  // 0x00000FFC
+    localparam ECG_ADDR_BASE = 12'h801;  // 0x00000FF8
 
-	// RAM addresses reserved for ADC samples
-	localparam EMG_ADDR = 12'hC7F; // 0x00000FFC
-	localparam ECG_ADDR = 12'h801; // 0x00000FF8
-	
-	// Instruction Memory (ROM)
-	ROM #(.MEMFILE({INSTR_FILE, ".mem"}))
-	InstMem(.clk(clock), 
-		.addr(instAddr[11:0]), 
-		.dataOut(instData));
-	
-	// Register File
-	regfile RegisterFile(.clock(clock), 
-		.ctrl_writeEnable(rwe), .ctrl_reset(reset), 
-		.ctrl_writeReg(rd),
-		.ctrl_readRegA(rs1), .ctrl_readRegB(rs2), 
-		.data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB),.LED(LED));
-	
-	// -------------------------- ADC MUX --------------------------
-	// MUX to select between EMG and ECG data for writing to RAM
-	reg channel_select;
-	reg [31:0] adc_data_mux;
-	reg [11:0] adc_addr_mux;
+    // ============================ //
+    // === Sample Control Logic === //
+    // ============================ //
+    localparam SAMPLE_INTERVAL = 18'd175000;  // 5ms @ 35MHz = 200Hz
+    reg [17:0] sample_counter = 0;
+    reg sample_enable = 0;
+    reg channel_select = 0;  // 0 = EMG, 1 = ECG
+    reg [9:0] sample_number = 0;
 
-	// Sample counter for timing (100 samples per second)
-	// This is a 5ms sample interval at 35MHz clock
-	reg [17:0] sample_counter;
-	reg sample_enable;
-	localparam SAMPLE_INTERVAL = 18'd175000;  // 5 ms @ 35MHz
-
-	always @(posedge clock or posedge reset) begin
-		if (reset) begin
-			sample_counter <= 18'd0;
-			sample_enable <= 1'b0;
-			channel_select <= 1'b0;
-		end else begin
-			if (sample_counter >= SAMPLE_INTERVAL - 1) begin
-				sample_counter <= 18'd0;
-				sample_enable <= 1'b1;
-				channel_select <= ~channel_select; // toggle between EMG and ECG
-			end else begin
-				sample_counter <= sample_counter + 1;
-				sample_enable <= 1'b0;
+    always @(posedge clock or posedge reset) begin
+        if (reset) begin
+            sample_counter <= 0;
+            sample_enable <= 0;
+            channel_select <= 0;
+            sample_number <= 0;
+        end else if (sample_counter == SAMPLE_INTERVAL - 1) begin
+            sample_counter <= 0;
+            sample_enable <= 1;
+            channel_select <= ~channel_select;
+            sample_number <= sample_number + 1;
+			if (sample_number == 10'd800) begin
+				sample_number <= 0; // Reset sample number after 800 samples
 			end
-		end
-	end
+        end else begin
+            sample_counter <= sample_counter + 1;
+            sample_enable <= 0;
+        end
+    end
 
+    // ADC Data Routing Logic
+    reg [31:0] adc_data_mux;
+    reg [11:0] adc_addr_mux;
+    always @(*) begin
+        if (channel_select == 0) begin
+            adc_data_mux = emg_out;
+            adc_addr_mux = EMG_ADDR_BASE + sample_number;
+        end else begin
+            adc_data_mux = ecg_out;
+            adc_addr_mux = ECG_ADDR_BASE + sample_number;
+        end
+    end
 
-	always @(*) begin
-		if (channel_select == 1'b0) begin
-			adc_data_mux = emg_out;
-			adc_addr_mux = EMG_ADDR;
-		end else begin
-			adc_data_mux = ecg_out;
-			adc_addr_mux = ECG_ADDR;
-		end
-	end
+    // ============================== //
+    // === Instruction ROM Module === //
+    // ============================== //
+    ROM #(.MEMFILE({INSTR_FILE, ".mem"})) InstMem (
+        .clk(clock),
+        .addr(instAddr[11:0]),
+        .dataOut(instData)
+    );
 
-	// Processor Memory (RAM)
-	RAM ProcMem(.clk(clock), 
-		.wEn(mwe), 
-		.addr(memAddr[11:0]), 
-		.dataIn(memDataIn), 
-		.dataOut(memDataOut),
+    // ============================ //
+    // === Register File Module === //
+    // ============================ //
+    regfile RegisterFile (
+        .clock(clock),
+        .ctrl_writeEnable(rwe), .ctrl_reset(reset),
+        .ctrl_writeReg(rd),
+        .ctrl_readRegA(rs1), .ctrl_readRegB(rs2),
+        .data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB),
+        .LED(LED)
+    );
 
-		// ADC Port (write-only)
-		.adc_wEn(sample_enable),
-		.adc_addr(adc_addr_mux),
-		.adc_dataIn(adc_data_mux)
+    // ====================== //
+    // === Data RAM Block === //
+    // ====================== //
+    RAM ProcMem (
+        .clk(clock),
+        .wEn(mwe),
+        .addr(memAddr[11:0]),
+        .dataIn(memDataIn),
+        .dataOut(memDataOut),
 
-		);
+        // ADC Write-Only Port
+        .adc_wEn(sample_enable),
+        .adc_addr(adc_addr_mux),
+        .adc_dataIn(adc_data_mux)
+    );
 
 endmodule
