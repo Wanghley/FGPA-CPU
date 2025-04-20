@@ -1,36 +1,41 @@
-module RAM #(
-    parameter DATA_WIDTH = 32,
-    parameter ADDRESS_WIDTH = 12,
-    parameter DEPTH = 4096
-)(
-    input wire clk,
+`timescale 1ns / 1ps
+module RAM #( parameter DATA_WIDTH = 32, ADDRESS_WIDTH = 12, DEPTH = 4096) (
+    input wire                     clk,
 
-    // Port A - CPU
-    input wire wEn,
+    // CPU Side (Port A - Original naming)
+    input wire                     wEn,
     input wire [ADDRESS_WIDTH-1:0] addr,
-    input wire [DATA_WIDTH-1:0] dataIn,
-    output reg [DATA_WIDTH-1:0] dataOut,
+    input wire [DATA_WIDTH-1:0]    dataIn,
+    output reg [DATA_WIDTH-1:0]    dataOut = 0,
 
-    // Port B - ADC
-    input wire adc_wEn,
+    // ADC Side (Port B - New)
+    input wire                     adc_wEn,
     input wire [ADDRESS_WIDTH-1:0] adc_addr,
-    input wire [DATA_WIDTH-1:0] adc_dataIn
+    input wire [DATA_WIDTH-1:0]    adc_dataIn
 );
 
-// Shared memory
-reg [DATA_WIDTH-1:0] memory [0:DEPTH-1];
+reg [DATA_WIDTH-1:0] MemoryArray[0:DEPTH-1];
 
-// Port A - CPU
-always @(posedge clk) begin
-    if (wEn)
-        memory[addr] <= dataIn;
-    dataOut <= memory[addr];
+integer i;
+initial begin
+    for (i = 0; i < DEPTH; i = i + 1) begin
+        MemoryArray[i] <= 0;
+    end
 end
 
-// Port B - ADC
+// CPU Port (original naming)
 always @(posedge clk) begin
-    if (adc_wEn)
-        memory[adc_addr] <= adc_dataIn;
+    if(wEn) begin
+        MemoryArray[addr] <= dataIn;
+    end
+    dataOut <= MemoryArray[addr];
+end
+
+// ADC Port (write-only)
+always @(posedge clk) begin
+    if(adc_wEn) begin
+        MemoryArray[adc_addr] <= adc_dataIn;
+    end
 end
 
 endmodule
