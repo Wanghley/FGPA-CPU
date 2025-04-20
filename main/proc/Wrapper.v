@@ -8,10 +8,14 @@
  */
 
 module Wrapper (
-    input clock,
-    input reset,
+    input clock,                  // 35 MHz system clock
+    input clock25,                // 25 MHz clock for VGA
+    input reset,                  // Reset signal
     input vauxn3, vauxp3,         // EMG input (VAUX3)
     input vauxn11, vauxp11,       // ECG input (VAUX11)
+    output [3:0] VGA_R,          // VGA Red channel
+    output [3:0] VGA_G,          // VGA Green channel
+    output [3:0] VGA_B,          // VGA Blue channel
     output [15:0] LED
 );
 
@@ -107,6 +111,24 @@ module Wrapper (
         end
     end
 
+    // ============================ //
+    // === VGA Display Logic === //
+    // ============================ //
+    wire [11:0] vga_ecg_addr;
+    wire [31:0] vga_ecg_data;
+
+
+    VGAController DISPLAY(
+        .clock(clock),
+        .clock25(clock25),
+        .reset(reset),
+        .VGA_R(VGA_R),
+        .VGA_G(VGA_G),
+        .VGA_B(VGA_B),
+        .ecg_data(memDataOut), // ECG data from RAM
+        .ecg_addr(vga_ecg_addr) // Address to read ECG data
+    );
+
 
     // ============================== //
     // === Instruction ROM Module === //
@@ -142,7 +164,11 @@ module Wrapper (
         // ADC Write-Only Port
         .adc_wEn(sample_enable),
         .adc_addr(adc_addr_mux),
-        .adc_dataIn(adc_data_mux)
+        .adc_dataIn(adc_data_mux),
+
+        // VGA Read-Only Port
+        .vga_addr(vga_ecg_addr),
+        .vga_dataOut(vga_ecg_data)
     );
 
 endmodule

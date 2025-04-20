@@ -13,11 +13,6 @@ module VGAController(
     inout ps2_clk,
     inout ps2_data,
 
-    input BTNU,
-    input BTNL,
-    input BTNR,
-    input BTND,
-
     input [31:0] ecg_data,         // RAM Output: 12-bit ECG value in [11:0]
     output reg [11:0] ecg_addr     // RAM Address input
 );
