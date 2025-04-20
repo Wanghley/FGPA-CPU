@@ -1,7 +1,6 @@
 `timescale 1ns / 100ps
 module VGAController(     
     input clock,                // 35 MHz System Clock (not used)
-    input clock25,              // 25 MHz VGA Clock
     input reset,                // Reset Signal
 
     output hSync,               // Horizontal Sync
@@ -16,6 +15,15 @@ module VGAController(
     input [31:0] ecg_data,         // RAM Output: 12-bit ECG value in [11:0]
     output reg [11:0] ecg_addr     // RAM Address input
 );
+
+    // 25 MHz clock for VGA timing
+    wire clock25;
+
+    clk_wiz_0 clkgen_inst (
+        .clk35(clock),     // Your 35 MHz input clock
+        .clk25(clock25), // Your new 25 MHz output
+        .reset(reset)        // Optional
+    );
 
     // VGA screen size
     localparam VIDEO_WIDTH  = 640;
@@ -40,7 +48,7 @@ module VGAController(
         .y(y)
     );
 
-    // Scale 12-bit ECG value (0–4095) to screen vertical range (~0–255)
+    // Scale 12-bit ECG value (0-4095) to screen vertical range (~0-255)
     wire [8:0] y_ecg;
     assign y_ecg = 240 - ecg_data[11:4]; // Downscale and center
 
