@@ -15,7 +15,9 @@ module Wrapper (
     output [3:0] VGA_R,          // VGA Red channel
     output [3:0] VGA_G,          // VGA Green channel
     output [3:0] VGA_B,          // VGA Blue channel
-    output [15:0] LED
+    output [15:0] LED,
+    output hSync,           // VGA horizontal sync
+    output vSync           // VGA vertical sync
 );
 
     // ===================== //
@@ -35,8 +37,17 @@ module Wrapper (
     // ============================= //
     // === Instantiate Processor === //
     // ============================= //
+
+    wire clock25; // 25 MHz clock for CPU
+
+    reg[1:0] pixCounter = 0;      // Pixel counter to divide the clock
+    assign clock25 = pixCounter[1]; // Set the clock high whenever the second bit (2) is high
+	always @(posedge clk) begin
+		pixCounter <= pixCounter + 1; // Since the reg is only 3 bits, it will reset every 8 cycles
+	end
+
     processor CPU (
-        .clock(clock), .reset(reset),
+        .clock(clock25), .reset(reset),
         .address_imem(instAddr), .q_imem(instData),
         .ctrl_writeEnable(rwe), .ctrl_writeReg(rd),
         .ctrl_readRegA(rs1), .ctrl_readRegB(rs2),
@@ -63,7 +74,7 @@ module Wrapper (
     // ============================ //
     // === Sample Control Logic === //
     // ============================ //
-    localparam SAMPLE_INTERVAL = 18'd175000;  // 5ms @ 35MHz = 200Hz
+    localparam SAMPLE_INTERVAL = 18'd125000;  // 5ms @ 35MHz = 200Hz
     reg [17:0] sample_counter = 0;
     reg sample_enable = 0;
     reg channel_select = 0;  // 0 = EMG, 1 = ECG
@@ -123,6 +134,8 @@ module Wrapper (
         .VGA_R(VGA_R),
         .VGA_G(VGA_G),
         .VGA_B(VGA_B),
+        .hSync(hSync),
+        .vSync(vSync),
         .ecg_data(memDataOut), // ECG data from RAM
         .ecg_addr(vga_ecg_addr) // Address to read ECG data
     );
