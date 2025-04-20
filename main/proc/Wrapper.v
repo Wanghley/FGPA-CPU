@@ -64,22 +64,30 @@ module Wrapper (
     reg [17:0] sample_counter = 0;
     reg sample_enable = 0;
     reg channel_select = 0;  // 0 = EMG, 1 = ECG
-    reg [9:0] sample_number = 0;
+    reg [9:0] sample_number_emg = 0;
+    reg [9:0] sample_number_ecg = 0;
 
     always @(posedge clock or posedge reset) begin
         if (reset) begin
             sample_counter <= 0;
             sample_enable <= 0;
             channel_select <= 0;
-            sample_number <= 0;
+            sample_number_emg <= 0;
+            sample_number_ecg <= 0;
         end else if (sample_counter == SAMPLE_INTERVAL - 1) begin
             sample_counter <= 0;
             sample_enable <= 1;
             channel_select <= ~channel_select;
-            sample_number <= sample_number + 1;
-			if (sample_number == 10'd800) begin
-				sample_number <= 0; // Reset sample number after 800 samples
-			end
+
+            if (channel_select == 0) begin  // EMG
+                sample_number_emg <= sample_number_emg + 1;
+                if (sample_number_emg == 10'd640)
+                    sample_number_emg <= 0;
+            end else begin  // ECG
+                sample_number_ecg <= sample_number_ecg + 1;
+                if (sample_number_ecg == 10'd640)
+                    sample_number_ecg <= 0;
+            end
         end else begin
             sample_counter <= sample_counter + 1;
             sample_enable <= 0;
@@ -89,15 +97,16 @@ module Wrapper (
     // ADC Data Routing Logic
     reg [31:0] adc_data_mux;
     reg [11:0] adc_addr_mux;
-    always @(*) begin
+    always @(posedge clock) begin
         if (channel_select == 0) begin
             adc_data_mux = emg_out;
-            adc_addr_mux = EMG_ADDR_BASE + sample_number;
+            adc_addr_mux = EMG_ADDR_BASE + sample_number_emg;
         end else begin
             adc_data_mux = ecg_out;
-            adc_addr_mux = ECG_ADDR_BASE + sample_number;
+            adc_addr_mux = ECG_ADDR_BASE + sample_number_ecg;
         end
     end
+
 
     // ============================== //
     // === Instruction ROM Module === //
