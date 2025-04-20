@@ -67,6 +67,8 @@ module Wrapper (
         .emg_out(emg_out), .ecg_out(ecg_out)
     );
 
+    assign LED = ecg_out[15:0];
+
     // Reserved memory address base for ADC writes
     localparam EMG_ADDR_BASE = 12'hC7F;  // 0x00000FFC
     localparam ECG_ADDR_BASE = 12'h801;  // 0x00000FF8
@@ -158,8 +160,8 @@ module Wrapper (
         .ctrl_writeEnable(rwe), .ctrl_reset(reset),
         .ctrl_writeReg(rd),
         .ctrl_readRegA(rs1), .ctrl_readRegB(rs2),
-        .data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB),
-        .LED(LED)
+        .data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB)
+        // .LED(LED)
     );
 
     // ====================== //
