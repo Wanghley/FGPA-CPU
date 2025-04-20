@@ -70,20 +70,21 @@ module Wrapper (
         if (reset) begin
             sample_counter <= 0;
             sample_enable <= 0;
+            channel_select <= 0;
             sample_number <= 0;
         end else if (sample_counter == SAMPLE_INTERVAL - 1) begin
             sample_counter <= 0;
             sample_enable <= 1;
+            channel_select <= ~channel_select;
             sample_number <= sample_number + 1;
-            if (sample_number == 10'd800) begin
-                sample_number <= 0; // Wrap around
-            end
+			if (sample_number == 10'd800) begin
+				sample_number <= 0; // Reset sample number after 800 samples
+			end
         end else begin
             sample_counter <= sample_counter + 1;
             sample_enable <= 0;
         end
     end
-
 
     // ADC Data Routing Logic
     reg [31:0] adc_data_mux;
@@ -122,20 +123,17 @@ module Wrapper (
     // ====================== //
     // === Data RAM Block === //
     // ====================== //
-        RAM ProcMem (
-            .clk(clock),
-            .wEn(mwe),
-            .addr(memAddr[11:0]),
-            .dataIn(memDataIn),
-            .dataOut(memDataOut),
+    RAM ProcMem (
+        .clk(clock),
+        .wEn(mwe),
+        .addr(memAddr[11:0]),
+        .dataIn(memDataIn),
+        .dataOut(memDataOut),
 
-            // ADC Write Ports for EMG and ECG
-            .adc_wEn(sample_enable),
-            .adc_addr_emg(emg_addr),
-            .adc_dataIn_emg(emg_out),
-            .adc_addr_ecg(ecg_addr),
-            .adc_dataIn_ecg(ecg_out)
-        );
-
+        // ADC Write-Only Port
+        .adc_wEn(sample_enable),
+        .adc_addr(adc_addr_mux),
+        .adc_dataIn(adc_data_mux)
+    );
 
 endmodule
