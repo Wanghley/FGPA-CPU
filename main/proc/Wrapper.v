@@ -9,7 +9,6 @@
 
 module Wrapper (
     input clock,                  // 35 MHz system clock
-    input clock25,                // 25 MHz clock for VGA
     input reset,                  // Reset signal
     input vauxn3, vauxp3,         // EMG input (VAUX3)
     input vauxn11, vauxp11,       // ECG input (VAUX11)
@@ -120,7 +119,6 @@ module Wrapper (
 
     VGAController DISPLAY(
         .clock(clock),
-        .clock25(clock25),
         .reset(reset),
         .VGA_R(VGA_R),
         .VGA_G(VGA_G),
