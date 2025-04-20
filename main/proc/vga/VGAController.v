@@ -19,11 +19,11 @@ module VGAController(
     // 25 MHz clock for VGA timing
     wire clock25;
 
-    clk_wiz_0 clkgen_inst (
-        .clk35(clock),     // Your 35 MHz input clock
-        .clk25(clock25), // Your new 25 MHz output
-        .reset(reset)        // Optional
-    );
+    reg[1:0] pixCounter = 0;      // Pixel counter to divide the clock
+    assign clock25 = pixCounter[1]; // Set the clock high whenever the second bit (2) is high
+	always @(posedge clk) begin
+		pixCounter <= pixCounter + 1; // Since the reg is only 3 bits, it will reset every 8 cycles
+	end
 
     // VGA screen size
     localparam VIDEO_WIDTH  = 640;
