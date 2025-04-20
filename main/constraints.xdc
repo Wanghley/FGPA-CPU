@@ -8,7 +8,13 @@
 set_property -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33} [get_ports clock]
 #create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports clk_100mhz]
 #create_clock -period 20.000 -name sys_clk_pin -waveform {0.000 10.000} -add [get_ports clk_50mhz]
-create_clock -period 28.5710 -name sys_clk_pin -waveform {0.000 14.286} -add [get_ports clock]
+# create_clock -period 28.5710 -name sys_clk_pin -waveform {0.000 14.286} -add [get_ports clock]
+create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports clock]
+
+## 25 MHz External Clock on GCLK pin
+#set_property PACKAGE_PIN U9 [get_ports clock25]
+#set_property IOSTANDARD LVCMOS33 [get_ports clock25]
+#create_clock -period 40.000 -name clock25 -waveform {0.000 20.000} [get_ports clock25]
 
 ## Reset
 set_property -dict {PACKAGE_PIN N17 IOSTANDARD LVCMOS33} [get_ports reset]
@@ -96,7 +102,7 @@ set_property IOSTANDARD LVCMOS33 [get_ports hSync]
 set_property IOSTANDARD LVCMOS33 [get_ports vSync]
 
 ## PS2 Stuff
-set_property PACKAGE_PIN F4 [get_ports ps2_clk]
-set_property PACKAGE_PIN B2 [get_ports ps2_data]
-set_property IOSTANDARD LVCMOS33 [get_ports ps2_clk]
-set_property IOSTANDARD LVCMOS33 [get_ports ps2_data]
+# set_property PACKAGE_PIN F4 [get_ports ps2_clk]
+# set_property PACKAGE_PIN B2 [get_ports ps2_data]
+# set_property IOSTANDARD LVCMOS33 [get_ports ps2_clk]
+# set_property IOSTANDARD LVCMOS33 [get_ports ps2_data]
