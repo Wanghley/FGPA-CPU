@@ -27,8 +27,8 @@ xadc_wiz_0 xadc_inst (
     .vauxn3(vauxn3),
     .vauxp11(vauxp11),
     .vauxn11(vauxn11),
-    .reset_in(reset),
-);
+    .reset_in(reset) // ✅ no comma here!
+);                   // ✅ good
 
 // Read and route ADC values to EMG or ECG outputs
 always @(posedge clk) begin 
