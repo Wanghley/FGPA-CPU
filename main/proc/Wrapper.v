@@ -128,19 +128,24 @@ module Wrapper (
     // ============================ //
     wire [11:0] vga_ecg_addr;
     wire [31:0] vga_ecg_data;
+    wire [11:0] vga_emg_addr;
+    wire [31:0] vga_emg_data;
 
 
-    VGAController DISPLAY(
-        .clock(clock),
-        .reset(reset),
-        .VGA_R(VGA_R),
-        .VGA_G(VGA_G),
-        .VGA_B(VGA_B),
-        .hSync(hSync),
-        .vSync(vSync),
-        .ecg_data(vga_ecg_data), // ECG data from RAM
-        .ecg_addr(vga_ecg_addr) // Address to read ECG data
-    );
+    VGAController DISPLAY (
+    .clock(clock),
+    .reset(reset),
+    .VGA_R(VGA_R),
+    .VGA_G(VGA_G),
+    .VGA_B(VGA_B),
+    .hSync(hSync),
+    .vSync(vSync),
+    .emg_data(vga_emg_data),
+    .ecg_data(vga_ecg_data),
+    .emg_addr(vga_emg_addr),
+    .ecg_addr(vga_ecg_addr)
+);
+
 
 
     // ============================== //
@@ -176,13 +181,15 @@ module Wrapper (
     wire [31:0] dataInB;
     wire [31:0] dataOutB;
 
-    // Use sample_enable to select ADC write, otherwise allow VGA read
-    assign wEnB    = sample_enable;
-    assign addrB   = sample_enable ? adc_addr_mux : vga_ecg_addr;
-    assign dataInB = adc_data_mux;
+    // VGA RAM read port logic (alternating reads)
+    reg vga_sel = 0;  // 0: ECG, 1: EMG
+    always @(posedge clock) vga_sel <= ~vga_sel;
 
-    // Feed VGA with the read output from Port B
-    assign vga_ecg_data = dataOutB;
+    assign addrB = sample_enable ? adc_addr_mux :
+                vga_sel ? vga_emg_addr : vga_ecg_addr;
+
+    assign vga_ecg_data = (vga_sel == 0) ? dataOutB : 32'd0;
+    assign vga_emg_data = (vga_sel == 1) ? dataOutB : 32'd0;
     
         RAM ProcMem (
         .clk(clock),
