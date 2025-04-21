@@ -1,52 +1,39 @@
 `timescale 1ns / 1ps
-module RAM #( parameter DATA_WIDTH = 32, ADDRESS_WIDTH = 12, DEPTH = 4096) (
-    input wire                     clk,
 
-    // CPU Side (Port A - RW)
-    input wire                     wEn,
-    input wire [ADDRESS_WIDTH-1:0] addr,
-    input wire [DATA_WIDTH-1:0]    dataIn,
-    output reg [DATA_WIDTH-1:0]    dataOut = 0,
+module RAM #(
+    parameter DATA_WIDTH = 32,
+    parameter ADDRESS_WIDTH = 12,
+    parameter DEPTH = 4096
+)(
+    input wire clk,
 
-    // ADC Side (Port B - W)
-    // Note: This port is write-only, no readback
-    input wire                     adc_wEn,
-    input wire [ADDRESS_WIDTH-1:0] adc_addr,
-    input wire [DATA_WIDTH-1:0]    adc_dataIn,
+    // Port A - CPU (read/write)
+    input wire                  wEnA,
+    input wire [ADDRESS_WIDTH-1:0] addrA,
+    input wire [DATA_WIDTH-1:0] dataInA,
+    output reg [DATA_WIDTH-1:0] dataOutA,
 
-    // VGA Side (Port C - R)
-    // Note: This port is read-only, no writeback
-    input wire [ADDRESS_WIDTH-1:0] vga_addr,
-    output reg [DATA_WIDTH-1:0]    vga_dataOut = 0
+    // Port B - ADC or VGA (read/write)
+    input wire                  wEnB,
+    input wire [ADDRESS_WIDTH-1:0] addrB,
+    input wire [DATA_WIDTH-1:0] dataInB,
+    output reg [DATA_WIDTH-1:0] dataOutB
 );
 
-reg [DATA_WIDTH-1:0] MemoryArray[0:DEPTH-1];
+    (* ram_style = "block" *) reg [DATA_WIDTH-1:0] MemoryArray [0:DEPTH-1];
 
-integer i;
-initial begin
-    for (i = 0; i < DEPTH; i = i + 1) begin
-        MemoryArray[i] <= 0;
+    // Port A logic
+    always @(posedge clk) begin
+        if (wEnA)
+            MemoryArray[addrA] <= dataInA;
+        dataOutA <= MemoryArray[addrA];
     end
-end
 
-// CPU Port (original naming)
-always @(posedge clk) begin
-    if(wEn) begin
-        MemoryArray[addr] <= dataIn;
+    // Port B logic
+    always @(posedge clk) begin
+        if (wEnB)
+            MemoryArray[addrB] <= dataInB;
+        dataOutB <= MemoryArray[addrB];
     end
-    dataOut <= MemoryArray[addr];
-end
-
-// ADC Port (write-only)
-always @(posedge clk) begin
-    if(adc_wEn) begin
-        MemoryArray[adc_addr] <= adc_dataIn;
-    end
-end
-
-// VGA Port (read-only)
-always @(posedge clk) begin
-    vga_dataOut <= MemoryArray[vga_addr];
-end
 
 endmodule
