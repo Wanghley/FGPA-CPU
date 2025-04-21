@@ -138,7 +138,7 @@ module Wrapper (
         .VGA_B(VGA_B),
         .hSync(hSync),
         .vSync(vSync),
-        .ecg_data(memDataOut), // ECG data from RAM
+        .ecg_data(vga_ecg_data), // ECG data from RAM
         .ecg_addr(vga_ecg_addr) // Address to read ECG data
     );
 
@@ -160,28 +160,46 @@ module Wrapper (
         .ctrl_writeEnable(rwe), .ctrl_reset(reset),
         .ctrl_writeReg(rd),
         .ctrl_readRegA(rs1), .ctrl_readRegB(rs2),
-        .data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB)
+        .data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB),
         .LED(LED)
     );
 
     // ====================== //
     // === Data RAM Block === //
     // ====================== //
-    RAM ProcMem (
+        // ============================ //
+    // === RAM Port B Selector  === //
+    // ============================ //
+
+    wire wEnB;
+    wire [11:0] addrB;
+    wire [31:0] dataInB;
+    wire [31:0] dataOutB;
+
+    // Use sample_enable to select ADC write, otherwise allow VGA read
+    assign wEnB    = sample_enable;
+    assign addrB   = sample_enable ? adc_addr_mux : vga_ecg_addr;
+    assign dataInB = adc_data_mux;
+
+    // Feed VGA with the read output from Port B
+    assign vga_ecg_data = dataOutB;
+    
+        RAM ProcMem (
         .clk(clock),
-        .wEn(mwe),
-        .addr(memAddr[11:0]),
-        .dataIn(memDataIn),
-        .dataOut(memDataOut),
 
-        // ADC Write-Only Port
-        .adc_wEn(sample_enable),
-        .adc_addr(adc_addr_mux),
-        .adc_dataIn(adc_data_mux),
+        // === Port A (Processor) ===
+        .wEnA(mwe),
+        .addrA(memAddr[11:0]),
+        .dataInA(memDataIn),
+        .dataOutA(memDataOut),
 
-        // VGA Read-Only Port
-        .vga_addr(vga_ecg_addr),
-        .vga_dataOut(vga_ecg_data)
+        // === Port B (ADC + VGA, time-shared) ===
+        .wEnB(wEnB),
+        .addrB(addrB),
+        .dataInB(dataInB),
+        .dataOutB(dataOutB)
     );
+
+    
 
 endmodule
