@@ -59,7 +59,7 @@ module VGAController(
                     r <= 0; g <= 0; b <= 0;
                 end
             end else begin
-                sig_addr <= x + 12'hC7F;               // EMG address
+                sig_addr <= x + 12'h6AC;               // EMG address
                 y_val <= 480 - sig_data[11:4];         // Center EMG
                 if (y == y_val) begin
                     r <= 4'hF;  // White for EMG
