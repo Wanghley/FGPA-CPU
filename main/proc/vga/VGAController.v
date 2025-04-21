@@ -1,31 +1,26 @@
 `timescale 1ns / 100ps
 module VGAController(     
-    input clock,                // 35 MHz System Clock (not used)
-    input reset,                // Reset Signal
+    input clock,
+    input reset,
 
-    output hSync,               // Horizontal Sync
-    output vSync,               // Vertical Sync
-    output [3:0] VGA_R,         // Red Channel
-    output [3:0] VGA_G,         // Green Channel
-    output [3:0] VGA_B,         // Blue Channel
+    output hSync,
+    output vSync,
+    output [3:0] VGA_R,
+    output [3:0] VGA_G,
+    output [3:0] VGA_B,
 
-    inout ps2_clk,
-    inout ps2_data,
-
-    input [31:0] ecg_data,         // RAM Output: 12-bit ECG value in [11:0]
-    output reg [11:0] ecg_addr     // RAM Address input
+    output reg [11:0] sig_addr,
+    input      [31:0] sig_data
 );
 
-    // 25 MHz clock for VGA timing
-    wire clock25;
+    // 25 MHz clock generation
+    reg [1:0] pixCounter = 0;
+    wire clock25 = pixCounter[1];
+    always @(posedge clock) begin
+        pixCounter <= pixCounter + 1;
+    end
 
-    reg[1:0] pixCounter = 0;      // Pixel counter to divide the clock
-    assign clock25 = pixCounter[1]; // Set the clock high whenever the second bit (2) is high
-	always @(posedge clock) begin
-		pixCounter <= pixCounter + 1; // Since the reg is only 3 bits, it will reset every 8 cycles
-	end
-
-    // VGA screen size
+    // VGA timing
     localparam VIDEO_WIDTH  = 640;
     localparam VIDEO_HEIGHT = 480;
 
@@ -33,7 +28,6 @@ module VGAController(
     wire [9:0] x;
     wire [8:0] y;
 
-    // VGA timing controller
     VGATimingGenerator #(
         .HEIGHT(VIDEO_HEIGHT),
         .WIDTH(VIDEO_WIDTH)
@@ -48,24 +42,35 @@ module VGAController(
         .y(y)
     );
 
-    // Scale 12-bit ECG value (0-4095) to screen vertical range (~0-255)
-    wire [8:0] y_ecg;
-    assign y_ecg = 240 - ecg_data[11:4]; // Downscale and center
-
-    // Color output logic
+    // Color
     reg [3:0] r, g, b;
+    reg [8:0] y_val;
 
     always @(posedge clock25) begin
-        ecg_addr <= x + 12'h801; // Read ECG sample at pixel column x
-
-        if (active && y == y_ecg) begin
-            r <= 4'd0;
-            g <= 4'hF;  // Green waveform
-            b <= 4'd0;
+        if (active) begin
+            if (y < 240) begin
+                sig_addr <= x + 12'h801;               // ECG address
+                y_val <= 240 - sig_data[11:4];         // Center ECG
+                if (y == y_val) begin
+                    r <= 0;
+                    g <= 4'hF;  // Green for ECG
+                    b <= 0;
+                end else begin
+                    r <= 0; g <= 0; b <= 0;
+                end
+            end else begin
+                sig_addr <= x + 12'hC7F;               // EMG address
+                y_val <= 480 - sig_data[11:4];         // Center EMG
+                if (y == y_val) begin
+                    r <= 4'hF;  // White for EMG
+                    g <= 4'hF;
+                    b <= 4'hF;
+                end else begin
+                    r <= 0; g <= 0; b <= 0;
+                end
+            end
         end else begin
-            r <= 4'd0;
-            g <= 4'd0;
-            b <= 4'd0;
+            r <= 0; g <= 0; b <= 0;
         end
     end
 

@@ -126,8 +126,8 @@ module Wrapper (
     // ============================ //
     // === VGA Display Logic === //
     // ============================ //
-    wire [11:0] vga_ecg_addr;
-    wire [31:0] vga_ecg_data;
+    wire [11:0] vga_addr;
+    wire [31:0] vga_data;
 
 
     VGAController DISPLAY(
@@ -138,8 +138,8 @@ module Wrapper (
         .VGA_B(VGA_B),
         .hSync(hSync),
         .vSync(vSync),
-        .ecg_data(vga_ecg_data), // ECG data from RAM
-        .ecg_addr(vga_ecg_addr) // Address to read ECG data
+        .sig_data(vga_data),
+        .sig_addr(vga_addr)
     );
 
 
@@ -177,14 +177,13 @@ module Wrapper (
     wire [31:0] dataOutB;
 
     // Use sample_enable to select ADC write, otherwise allow VGA read
-    assign wEnB    = sample_enable;
-    assign addrB   = sample_enable ? adc_addr_mux : vga_ecg_addr;
+    // RAM hookup
+    assign addrB = sample_enable ? adc_addr_mux : vga_addr;
     assign dataInB = adc_data_mux;
-
-    // Feed VGA with the read output from Port B
-    assign vga_ecg_data = dataOutB;
+    assign wEnB = sample_enable;
+    assign vga_data = dataOutB;
     
-        RAM ProcMem (
+    RAM ProcMem (
         .clk(clock),
 
         // === Port A (Processor) ===
