@@ -48,31 +48,35 @@ module VGAController(
 
     always @(posedge clock25) begin
         if (active) begin
-            if (y < 240) begin
-                sig_addr <= x + 12'h801;               // ECG address
-                y_val <= 240 - sig_data[11:4];         // Center ECG
+            // ECG display area
+            if (x >= 64 && x < 576 && y >= 80 && y < 160) begin
+                sig_addr <= (x - 64) + 12'h801;  // offset x to 0–511
+                y_val <= 160 - (sig_data[11:4] >> 1);  // scale to 80px height
                 if (y == y_val) begin
-                    r <= 0;
-                    g <= 4'hF;  // Green for ECG
-                    b <= 0;
+                    r <= 0; g <= 4'hF; b <= 0;  // green
                 end else begin
                     r <= 0; g <= 0; b <= 0;
                 end
-            end else begin
-                sig_addr <= x + 12'hC7F;               // EMG address
-                y_val <= 480 - sig_data[11:4];         // Center EMG
+            end
+            // EMG display area
+            else if (x >= 64 && x < 576 && y >= 320 && y < 400) begin
+                sig_addr <= (x - 64) + 12'hC7F;  // offset x to 0–511
+                y_val <= 400 - (sig_data[11:4] >> 1);  // scale to 80px height
                 if (y == y_val) begin
-                    r <= 4'hF;  // White for EMG
-                    g <= 4'hF;
-                    b <= 4'hF;
+                    r <= 4'hF; g <= 4'hF; b <= 4'hF;  // white
                 end else begin
                     r <= 0; g <= 0; b <= 0;
                 end
+            end
+            // outside signal zones
+            else begin
+                r <= 0; g <= 0; b <= 0;
             end
         end else begin
             r <= 0; g <= 0; b <= 0;
         end
     end
+
 
     assign VGA_R = r;
     assign VGA_G = g;
