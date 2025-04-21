@@ -12,8 +12,8 @@ module VGAController(
     inout ps2_clk,
     inout ps2_data,
 
-    input [31:0] ecg_data,         // RAM Output: 12-bit ECG value in [11:0]
-    output reg [11:0] ecg_addr     // RAM Address input
+    input [31:0] sig_data,         // RAM Output: 12-bit ECG value in [11:0]
+    output reg [11:0] sig_addr     // RAM Address input
 );
 
     // 25 MHz clock for VGA timing
@@ -50,22 +50,39 @@ module VGAController(
 
     // Scale 12-bit ECG value (0-4095) to screen vertical range (~0-255)
     wire [8:0] y_ecg;
-    assign y_ecg = 240 - ecg_data[11:4]; // Downscale and center
+
+    // Scale 12-bit EMG value (0-4095) to screen vertical range (~0-255)
+    wire [8:0] y_emg;
 
     // Color output logic
     reg [3:0] r, g, b;
 
     always @(posedge clock25) begin
-        ecg_addr <= x + 12'h801; // Read ECG sample at pixel column x
-
-        if (active && y == y_ecg) begin
-            r <= 4'd0;
-            g <= 4'hF;  // Green waveform
-            b <= 4'd0;
-        end else begin
-            r <= 4'd0;
-            g <= 4'd0;
-            b <= 4'd0;
+        if (active && (y < 300)) begin
+            sig_addr <= x + 12'h801; // ECG data
+            assign y_ecg = 240 - sig_data[11:4]; // Downscale and center
+            if (active && y == y_ecg) begin
+                r <= 4'd0;
+                g <= 4'hF;  // Green waveform
+                b <= 4'd0;
+            end else begin
+                r <= 4'd0;
+                g <= 4'd0;
+                b <= 4'd0;
+            end
+        
+        end else if (active && (y >= 300)) begin
+            assign y_emg = 340 - sig_data[11:4]; // Downscale and center
+            sig_addr <= x + 12'hC7F; // EMG data
+            if (active && y == y_emg) begin
+                r <= 4'hF;
+                g <= 4'hF;  // White-ish waveform
+                b <= 4'hF;
+            end else begin
+                r <= 4'd0;
+                g <= 4'd0;
+                b <= 4'd0;
+            end
         end
     end
 
