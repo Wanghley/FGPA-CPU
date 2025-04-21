@@ -111,10 +111,10 @@ module Wrapper_tb #(parameter FILE = "");
 						
 	// Processor Memory (RAM)
 	RAM ProcMem(.clk(clock), 
-		.wEn(mwe), 
-		.addr(memAddr[11:0]), 
-		.dataIn(memDataIn), 
-		.dataOut(memDataOut));
+		.wEnA(mwe), 
+		.addrA(memAddr[11:0]), 
+		.dataInA(memDataIn), 
+		.dataOutA(memDataOut));
 
 	// Create the clock
 	always
