@@ -126,17 +126,17 @@ module VGAController(
 
             // Top ECG box
             if (x >= 55 && x < 390 && y >= 45 && y < 226) begin
-                if (x < 360) begin
-                    sig_addr <= 12'h559 + x - 40;
-                    delayed_sig_addr <= 12'h559 + x - 40;
+                if (x < 375) begin  // Give some margin for edge cases
+                    sig_addr <= 12'h559 + (x - 55);  // Offset properly from the left edge
+                    delayed_sig_addr <= 12'h559 + (x - 55);
                     data_valid <= 1;
                 end
             end
             // Bottom EMG box
             else if (x >= 55 && x < 390 && y >= 254 && y < 434) begin
-                if (x < 360) begin
-                    sig_addr <= 12'h6AD + x - 40;
-                    delayed_sig_addr <= 12'h6AD + x - 40;
+                if (x < 375) begin  // Give some margin for edge cases
+                    sig_addr <= 12'h6AD + (x - 55);  // Offset properly from the left edge
+                    delayed_sig_addr <= 12'h6AD + (x - 55);
                     data_valid <= 1;
                 end
             end
@@ -148,27 +148,37 @@ module VGAController(
                 // ECG area
                 if (delayed_sig_addr >= 12'h559 && delayed_sig_addr < 12'h559 + 320) begin
                     if (max_ecg != min_ecg)
-                        scaled_val <= ((sig_data[11:0] - min_ecg) * 181) / (max_ecg - min_ecg);
+                        scaled_val <= ((sig_data[11:0] - min_ecg) * 170) / (max_ecg - min_ecg);
                     else
-                        scaled_val <= 90;
+                        scaled_val <= 85;
 
                     scaled_y <= 226 - scaled_val[8:0];
 
-                    if (y == scaled_y)
+                    // Make line 3 pixels thick
+                    if ((y >= scaled_y - 1) && (y <= scaled_y + 1))
                         pixelColor <= 12'b000011110000; // green
+                    
+                    // Draw grid lines (optional)
+                    else if (y % 20 == 0 || x % 20 == 0)
+                        pixelColor <= 12'b000100010001; // dim grid
                 end
 
                 // EMG area
                 else if (delayed_sig_addr >= 12'h6AD && delayed_sig_addr < 12'h6AD + 320) begin
                     if (max_emg != min_emg)
-                        scaled_val <= ((sig_data[11:0] - min_emg) * 181) / (max_emg - min_emg);
+                        scaled_val <= ((sig_data[11:0] - min_emg) * 170) / (max_emg - min_emg);
                     else
-                        scaled_val <= 90;
+                        scaled_val <= 85;
 
                     scaled_y <= 434 - scaled_val[8:0];
 
-                    if (y == scaled_y)
+                    // Make line 3 pixels thick
+                    if ((y >= scaled_y - 1) && (y <= scaled_y + 1))
                         pixelColor <= 12'b111100000000; // red
+                    
+                    // Draw grid lines (optional)
+                    else if (y % 20 == 0 || x % 20 == 0)
+                        pixelColor <= 12'b000100010001; // dim grid
                 end
             end
         end else begin
