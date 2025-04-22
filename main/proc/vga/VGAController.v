@@ -85,33 +85,73 @@ module VGAController(
     // Color Mapping
     reg [BITS_PER_COLOR-1:0] pixelColor;
 
-    always @(posedge clock25) begin
-        if (active) begin
-            pixelColor <= colorData;  // default image pixel
+    // ----------------------------------------------------------- //
+    // --------- Color Mapping for ECG and EMG Signals ----------- //
+    // ----------------------------------------------------------- //
 
-            // Check if inside the drawing box
+    // === Preload and Scaling Registers ===
+    reg [11:0] min_ecg = 0, max_ecg = 4095;
+    reg [11:0] min_emg = 0, max_emg = 4095;
+    reg [2:0] init_counter = 0;
+    reg [11:0] preload_addr;
+
+    reg [31:0] scaled_val;
+    reg [8:0]  scaled_y;
+
+    always @(posedge clock25) begin
+        if (init_counter < 4) begin
+            preload_addr <= 12'd1705 + init_counter;
+            sig_addr <= preload_addr;
+
+            case (init_counter)
+                3'd0: min_ecg <= sig_data[11:0];
+                3'd1: min_emg <= sig_data[11:0];
+                3'd2: max_ecg <= sig_data[11:0];
+                3'd3: max_emg <= sig_data[11:0];
+            endcase
+
+            init_counter <= init_counter + 1;
+            pixelColor <= 12'd0; // blank screen during preload
+        end else if (active) begin
+            pixelColor <= colorData;  // default background
+
+            // === ECG BOX (Top rectangle: y = 45–226) ===
             if (x >= 55 && x < 390 && y >= 45 && y < 226) begin
-                if (x < 360) begin  // limit to 320 data points
-                    sig_addr <= 12'h559 + x - 40;  // fetch address based on x
-                    // Scale signal to box height (181 px): assume sig_data[11:4] is 8 bits
-                    if (y == (135 - sig_data[11:4])) begin
+                if (x < 360) begin
+                    sig_addr <= 12'h559 + x - 40;
+
+                    if (max_ecg != min_ecg)
+                        scaled_val <= ((sig_data[11:0] - min_ecg) * 181) / (max_ecg - min_ecg);
+                    else
+                        scaled_val <= 90;
+
+                    scaled_y <= 226 - scaled_val[8:0];
+
+                    if (y == scaled_y)
                         pixelColor <= 12'b000011110000; // green
-                    end
                 end
-            end
-            else if (x >= 55 && x < 390 && y >= 254 && y < 434) begin
-                if (x < 360) begin  // limit to 320 data points
-                    sig_addr <= 12'h6AD + x - 40;  // fetch address based on x
-                    // Scale signal to box height (181 px): assume sig_data[11:4] is 8 bits
-                    if (y == (344 - sig_data[11:4])) begin
-                        pixelColor <= 12'b111100000000; // white
-                    end
+
+            // === EMG BOX (Bottom rectangle: y = 254–434) ===
+            end else if (x >= 55 && x < 390 && y >= 254 && y < 434) begin
+                if (x < 360) begin
+                    sig_addr <= 12'h6AD + x - 40;
+
+                    if (max_emg != min_emg)
+                        scaled_val <= ((sig_data[11:0] - min_emg) * 181) / (max_emg - min_emg);
+                    else
+                        scaled_val <= 90;
+
+                    scaled_y <= 434 - scaled_val[8:0];
+
+                    if (y == scaled_y)
+                        pixelColor <= 12'b111100000000; // red
                 end
             end
         end else begin
-            pixelColor <= 12'd0; // black outside visible area
+            pixelColor <= 12'd0; // black outside active area
         end
     end
+
 
     assign {VGA_R, VGA_G, VGA_B} = pixelColor;
 
