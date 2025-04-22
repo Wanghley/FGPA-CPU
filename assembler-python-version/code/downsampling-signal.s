@@ -16,7 +16,7 @@ start:
     # Initialize BPM calculation variables
     add $s4, $zero, $zero     # peak counter
     addi $s5, $zero, 0        # previous ECG value
-    addi $s6, $zero, 3399     # threshold for peak detection (changed to 2620)
+    addi $s6, $zero, 100      # threshold for peak detection
     add $s7, $zero, $zero     # state (0=below threshold, 1=above threshold)
     
 loop:
@@ -84,7 +84,7 @@ calculate_bpm:
     # Simplified: BPM = peak count * 18.75
     
     # Calculate BPM = peak count * 19 (approximating 18.75)
-    addi $t0, $zero, 19
+    addi $t0, $zero, 28
     mul $s4, $s4, $t0         # s4 now contains BPM
     
     # Save BPM to memory address 1704
