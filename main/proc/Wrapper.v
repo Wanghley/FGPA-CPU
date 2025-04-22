@@ -15,7 +15,7 @@ module Wrapper (
     output [3:0] VGA_R,          // VGA Red channel
     output [3:0] VGA_G,          // VGA Green channel
     output [3:0] VGA_B,          // VGA Blue channel
-    output reg [15:0] LED,
+    output [15:0] LED,
     output hSync,           // VGA horizontal sync
     output vSync           // VGA vertical sync
 );
