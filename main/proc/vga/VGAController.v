@@ -1,19 +1,21 @@
 `timescale 1ns / 100ps
-module VGAController(
+module VGAController(     
     input clock,
     input reset,
+
     output hSync,
     output vSync,
     output [3:0] VGA_R,
     output [3:0] VGA_G,
     output [3:0] VGA_B,
+
     output reg [11:0] sig_addr,
-    input [31:0] sig_data
+    input      [31:0] sig_data
 );
-    localparam VIDEO_WIDTH = 640;
+    localparam VIDEO_WIDTH  = 640;
     localparam VIDEO_HEIGHT = 480;
-    
-    // 25 MHz clock generation
+
+    // Generate 25 MHz clock
     reg [1:0] pixCounter;
     wire clock25;
     
@@ -26,12 +28,12 @@ module VGAController(
     always @(posedge clock) begin
         pixCounter <= pixCounter + 1;
     end
-    
+
     // VGA timing
     wire active, screenEnd;
     wire [9:0] x;
     wire [8:0] y;
-    
+
     VGATimingGenerator #(
         .HEIGHT(VIDEO_HEIGHT),
         .WIDTH(VIDEO_WIDTH)
@@ -45,154 +47,174 @@ module VGAController(
         .x(x),
         .y(y)
     );
+
+    // Image Data (Background)
+    localparam PIXEL_COUNT = VIDEO_WIDTH*VIDEO_HEIGHT;
+    localparam PIXEL_ADDRESS_WIDTH = $clog2(PIXEL_COUNT) + 1;
+    localparam BITS_PER_COLOR = 12;
+    localparam PALETTE_COLOR_COUNT = 256;
+    localparam PALETTE_ADDRESS_WIDTH = $clog2(PALETTE_COLOR_COUNT) + 1;
+
+    wire[PIXEL_ADDRESS_WIDTH-1:0] imgAddress = x + 640*y;
+    wire[PALETTE_ADDRESS_WIDTH-1:0] colorAddr;
+
+    VGA_RAM #(		
+        .DEPTH(PIXEL_COUNT),
+        .DATA_WIDTH(PALETTE_ADDRESS_WIDTH),
+        .ADDRESS_WIDTH(PIXEL_ADDRESS_WIDTH),
+        .MEMFILE("C:/Users/ws186/Documents/FGPA-CPU/assets/background/image.mem")
+    ) ImageData (
+        .clk(clock),
+        .addr(imgAddress),
+        .dataOut(colorAddr),
+        .wEn(1'b0)
+    );
+
+    wire [BITS_PER_COLOR-1:0] colorData;
+    VGA_RAM #(
+        .DEPTH(PALETTE_COLOR_COUNT),
+        .DATA_WIDTH(BITS_PER_COLOR),
+        .ADDRESS_WIDTH(PALETTE_ADDRESS_WIDTH),
+        .MEMFILE("C:/Users/ws186/Documents/FGPA-CPU/assets/background/colors.mem")
+    ) ColorPalette (
+        .clk(clock),
+        .addr(colorAddr),
+        .dataOut(colorData),
+        .wEn(1'b0)
+    );
+
+    // Sprite data for digits (0-9)
+    localparam SPRITE_COUNT = 10; // 10 digits (0-9)
+    localparam SPRITE_WIDTH = 32;
+    localparam SPRITE_HEIGHT = 32;
+    localparam SPRITE_LINES_TOTAL = SPRITE_COUNT * SPRITE_HEIGHT;
+    localparam SPRITE_ADDR_WIDTH = $clog2(SPRITE_LINES_TOTAL) + 1;
     
-    // Digit rendering state
-    reg [31:0] bpm_val;
-    reg [3:0] hundreds, tens, ones;
+    reg [SPRITE_ADDR_WIDTH-1:0] spriteAddr;
+    wire [31:0] spriteData;
     
-    // Read stages
-    reg fetch_bpm;
-    reg [11:0] current_sprite_addr;
-    reg [31:0] current_sprite_line;
-    
-    // Temp variables for digit extraction
-    reg [31:0] temp;
-    reg [4:0] x_offset;
-    reg [4:0] row;
+    VGA_RAM #(
+        .DEPTH(SPRITE_LINES_TOTAL),
+        .DATA_WIDTH(32),  // 32-bit lines for 32 pixels wide sprites
+        .ADDRESS_WIDTH(SPRITE_ADDR_WIDTH),
+        .MEMFILE("C:/Users/ws186/Documents/FGPA-CPU/assets/sprites.mem")
+    ) SpriteROM (
+        .clk(clock),
+        .addr(spriteAddr),
+        .dataOut(spriteData),
+        .wEn(1'b0)
+    );
+
+    // Shadow values of BPM digits
+    reg [3:0] hundreds;
+    reg [3:0] tens;
+    reg [3:0] ones;
+
+    // Track BPM value
+    reg [31:0] bpm_value;
+
+    // For digit rendering
     reg [3:0] digit;
-    
-    // Color output
-    reg [11:0] pixelColor;
+    reg [9:0] row_offset;
+    reg [4:0] col_offset;
+    reg digit_pixel_on;
+
+    // 1-second timer for BPM updates
+    // For 25MHz clock, we need to count to 25,000,000 for 1 second
+    reg [24:0] second_counter;
+    reg update_ready;
     
     // Initialize registers
     initial begin
-        bpm_val = 0;
         hundreds = 0;
         tens = 0;
         ones = 0;
-        fetch_bpm = 0;
-        temp = 0;
+        second_counter = 0;
+        update_ready = 1; // Start with ready to update
     end
-    
-    // Function to extract hundreds digit
-    function [3:0] extract_hundreds;
-        input [31:0] value;
-        reg [31:0] temp_val;
-        reg [3:0] result;
-        begin
-            temp_val = value;
-            result = 0;
-            
-            if (temp_val >= 900) begin temp_val = temp_val - 900; result = result + 9; end
-            if (temp_val >= 800) begin temp_val = temp_val - 800; result = result + 8; end
-            if (temp_val >= 700) begin temp_val = temp_val - 700; result = result + 7; end
-            if (temp_val >= 600) begin temp_val = temp_val - 600; result = result + 6; end
-            if (temp_val >= 500) begin temp_val = temp_val - 500; result = result + 5; end
-            if (temp_val >= 400) begin temp_val = temp_val - 400; result = result + 4; end
-            if (temp_val >= 300) begin temp_val = temp_val - 300; result = result + 3; end
-            if (temp_val >= 200) begin temp_val = temp_val - 200; result = result + 2; end
-            if (temp_val >= 100) begin temp_val = temp_val - 100; result = result + 1; end
-            
-            extract_hundreds = result;
+
+    // 1-second counter logic
+    always @(posedge clock25) begin
+        if (reset) begin
+            second_counter <= 0;
+            update_ready <= 1;
         end
-    endfunction
-    
-    // Function to extract tens digit
-    function [3:0] extract_tens;
-        input [31:0] value;
-        reg [31:0] temp_val;
-        reg [3:0] result;
-        begin
-            temp_val = value % 100;
-            result = 0;
-            
-            if (temp_val >= 90) begin temp_val = temp_val - 90; result = result + 9; end
-            if (temp_val >= 80) begin temp_val = temp_val - 80; result = result + 8; end
-            if (temp_val >= 70) begin temp_val = temp_val - 70; result = result + 7; end
-            if (temp_val >= 60) begin temp_val = temp_val - 60; result = result + 6; end
-            if (temp_val >= 50) begin temp_val = temp_val - 50; result = result + 5; end
-            if (temp_val >= 40) begin temp_val = temp_val - 40; result = result + 4; end
-            if (temp_val >= 30) begin temp_val = temp_val - 30; result = result + 3; end
-            if (temp_val >= 20) begin temp_val = temp_val - 20; result = result + 2; end
-            if (temp_val >= 10) begin temp_val = temp_val - 10; result = result + 1; end
-            
-            extract_tens = result;
+        else begin
+            if (second_counter >= 25000000) begin
+                second_counter <= 0;
+                update_ready <= 1;
+            end
+            else begin
+                second_counter <= second_counter + 1;
+            end
         end
-    endfunction
-    
-    // Addressing & display logic
+    end
+
+    // Rendering logic
+    reg [BITS_PER_COLOR-1:0] pixelColor;
+
     always @(posedge clock25) begin
         if (reset) begin
             sig_addr <= 12'd1704;
-            fetch_bpm <= 0;
-            pixelColor <= 12'd0;
-        end 
-        else if (active) begin
-            pixelColor <= 12'd0; // default black
-            fetch_bpm <= 0;
-            
-            // Load BPM value once per frame (top-left corner)
-            if (x == 0 && y == 0) begin
+        end else if (active) begin
+            pixelColor <= colorData;
+
+            // Load BPM value once per second (when update_ready is high)
+            if (x == 0 && y == 0 && update_ready) begin
                 sig_addr <= 12'd1704;
-                fetch_bpm <= 1;
-            end 
-            else if (x == 1 && y == 0 && fetch_bpm) begin
-                bpm_val <= sig_data;
-                
-                // Digit extraction using functions instead of while loops
-                hundreds <= extract_hundreds(sig_data);
-                tens <= extract_tens(sig_data);
-                ones <= sig_data % 10;
+                update_ready <= 0; // Clear the update flag
+            end else if (x == 1 && y == 0 && (second_counter == 0)) begin
+                bpm_value <= sig_data;
+                hundreds <= (sig_data / 100) % 10;
+                tens <=    (sig_data / 10) % 10;
+                ones <=    sig_data % 10;
             end
-            
-            // ECG box drawing
+
+            // ECG signal rendering
             if (x >= 55 && x < 390 && y >= 45 && y < 226) begin
                 if (x < 360) begin
                     sig_addr <= 12'h559 + x - 40;
                     if (y == (350 - sig_data[11:4])) begin
-                        pixelColor <= 12'b000011110000; // green
+                        pixelColor <= 12'b000011110000;
                     end
                 end
             end
-            
-            // EMG box drawing
+            // EMG signal rendering
             else if (x >= 55 && x < 390 && y >= 254 && y < 434) begin
                 if (x < 360) begin
                     sig_addr <= 12'h6AD + x - 40;
                     if (y == (400 - sig_data[11:4])) begin
-                        pixelColor <= 12'b111100000000; // red
+                        pixelColor <= 12'b111100000000;
                     end
                 end
             end
-            
-            // BPM digit drawing
+            // BPM digits rendering: 3 digits, each 32x32, starting at x = 480, y = 100
             else if (x >= 480 && x < 576 && y >= 100 && y < 132) begin
-                row = y - 100;
-                x_offset = x % 32;
-                
+                row_offset = y - 100;
+                col_offset = x[4:0]; // x % 32
+
                 case ((x - 480) / 32)
-                    0: digit = hundreds;
-                    1: digit = tens;
-                    2: digit = ones;
-                    default: digit = 0;
+                    2'd0: digit = hundreds;
+                    2'd1: digit = tens;
+                    2'd2: digit = ones;
+                    default: digit = 4'd0;
                 endcase
+
+                // Calculate sprite address: base 760 + digit*32 + row_offset
+                spriteAddr <= 760 + (digit * 32) + row_offset;
                 
-                // Request sprite line
-                current_sprite_addr = 12'd760 + digit * 32 + row;
-                sig_addr <= current_sprite_addr;
-                current_sprite_line <= sig_data;
+                // Check if the specific pixel in the sprite line should be on
+                digit_pixel_on = spriteData[31 - col_offset];
                 
-                // Draw pixel from sprite
-                if (current_sprite_line[31 - x_offset]) begin
-                    pixelColor <= 12'b111111111111; // white
+                if (digit_pixel_on) begin
+                    pixelColor <= 12'b111111111111; // white digit pixel
                 end
             end
-        end 
-        else begin
+        end else begin
             pixelColor <= 12'd0;
         end
     end
-    
+
     assign {VGA_R, VGA_G, VGA_B} = pixelColor;
-    
+
 endmodule
