@@ -204,7 +204,7 @@ module VGAController(
                 endcase
 
                 // Compute sprite line address and get pixel bit
-                spriteAddr <= 760 + digit * 32 + row_offset;
+                spriteAddr <= digit * 32 + row_offset;
                 digit_pixel_on = spriteData[31 - col_offset];
 
                 if (digit_pixel_on)
