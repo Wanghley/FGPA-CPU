@@ -73,6 +73,6 @@ module regfile (
         end
     endgenerate
 
-    assign LED = regs[9][15:0]; // Assign the first 16 bits of register 1 to LED
+    assign LED = regs[16][15:0]; // Assign the first 16 bits of register 1 to LED
 
 endmodule
