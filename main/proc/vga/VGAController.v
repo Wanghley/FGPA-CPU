@@ -9,8 +9,6 @@ module VGAController(
     output [3:0] VGA_G,
     output [3:0] VGA_B,
 
-    output reg [15:0] LED,
-
     output reg [11:0] sig_addr,
     input      [31:0] sig_data
 );
@@ -87,92 +85,72 @@ module VGAController(
     // Color Mapping
     reg [BITS_PER_COLOR-1:0] pixelColor;
 
-    // ----------------------------------------------------------- //
-    // --------- Color Mapping for ECG and EMG Signals ----------- //
-    // ----------------------------------------------------------- //
-
-    // Signal min/max values preload
-    reg [11:0] min_ecg = 0, max_ecg = 4095;
-    reg [11:0] min_emg = 0, max_emg = 4095;
-    reg [2:0] init_counter = 0;
-    reg [11:0] preload_addr;
-
-    // Signal memory coordination
-    reg [11:0] delayed_sig_addr;
-    reg [31:0] sig_data_reg;
-    reg [31:0] sig_data_prev;
-    reg        data_valid;
-
-    reg [8:0]  scaled_y;
-    wire [31:0] range_ecg = max_ecg - min_ecg;
-    wire [31:0] range_emg = max_emg - min_emg;
-
     always @(posedge clock25) begin
-        sig_data_prev <= sig_data;
+        if (active) begin
+            pixelColor <= colorData;  // default image pixel
 
-        if (init_counter < 4) begin
-            preload_addr <= 12'd1705 + init_counter;
-            sig_addr <= preload_addr;
-
-            case (init_counter)
-                3'd0: min_ecg <= sig_data[11:0];
-                3'd1: min_emg <= sig_data[11:0];
-                3'd2: max_ecg <= sig_data[11:0];
-                3'd3: max_emg <= sig_data[11:0];
-            endcase
-        // LED[11:0] <= (init_counter == 3'd2) ? sig_data[11:0] : 12'd0;
-
-            init_counter <= init_counter + 1;
-            pixelColor <= 12'd0;
-            data_valid <= 0;
-        end else if (active) begin
-            pixelColor <= colorData;
-            data_valid <= 0;
-
-            // ECG box: x = [55, 390), y = [45, 226)
+            // Check if inside the drawing box
             if (x >= 55 && x < 390 && y >= 45 && y < 226) begin
-                if (x < 375) begin
-                    sig_addr <= 12'h559 + (x - 55);
-                    delayed_sig_addr <= 12'h559 + (x - 55);
-                    data_valid <= 1;
+                if (x < 360) begin  // limit to 320 data points
+                    sig_addr <= 12'h559 + x - 40;  // fetch address based on x
+                    // Scale signal to box height (181 px): assume sig_data[11:4] is 8 bits
+                    if (y == (350 - sig_data[11:4])) begin
+                        pixelColor <= 12'b000011110000; // green
+                    end
                 end
             end
-
-            // EMG box: x = [55, 390), y = [254, 434)
             else if (x >= 55 && x < 390 && y >= 254 && y < 434) begin
-                if (x < 375) begin
-                    sig_addr <= 12'h6AD + (x - 55);
-                    delayed_sig_addr <= 12'h6AD + (x - 55);
-                    data_valid <= 1;
+                if (x < 360) begin  // limit to 320 data points
+                    sig_addr <= 12'h6AD + x - 40;  // fetch address based on x
+                    // Scale signal to box height (181 px): assume sig_data[11:4] is 8 bits
+                    if (y == (400 - sig_data[11:4])) begin
+                        pixelColor <= 12'b111100000000; // white
+                    end
                 end
             end
-
-            // One-cycle delayed usage of sig_data
-            if (data_valid) begin
-                sig_data_reg <= sig_data_prev;
-
-                if (delayed_sig_addr >= 12'h559 && delayed_sig_addr < 12'h559 + 320) begin
-                    scaled_y <= 226 - ((sig_data_prev - min_ecg) * 181 / range_ecg);
-                    if ((y >= scaled_y - 1) && (y <= scaled_y + 1))
-                        pixelColor <= 12'b000011110000; // Green for ECG
-                    else if (y % 20 == 0 || x % 20 == 0)
-                        pixelColor <= 12'b000100010001;
-                end else if (delayed_sig_addr >= 12'h6AD && delayed_sig_addr < 12'h6AD + 320) begin
-                    scaled_y <= 254 + ((sig_data_prev[8:0] - min_emg) * 180 / range_emg);
-                    if ((y >= scaled_y - 1) && (y <= scaled_y + 1))
-                        pixelColor <= 12'b111100000000; // Red for EMG
-                    else if (y % 20 == 0 || x % 20 == 0)
-                        pixelColor <= 12'b000100010001;
-                end
-            end
-
         end else begin
-            pixelColor <= 12'd0;
-            data_valid <= 0;
+            pixelColor <= 12'd0; // black outside visible area
         end
     end
 
-
     assign {VGA_R, VGA_G, VGA_B} = pixelColor;
+
+
+    // OLD CODE FOR REFERENCE
+    // Color
+    // reg [3:0] r, g, b;
+    // reg [8:0] y_val;
+
+    // always @(posedge clock25) begin
+    //     if (active) begin
+    //         if (y < 240) begin
+    //             sig_addr <= x + 12'h801;               // ECG address
+    //             y_val <= 240 - sig_data[11:4];         // Center ECG
+    //             if (y == y_val) begin
+    //                 r <= 0;
+    //                 g <= 4'hF;  // Green for ECG
+    //                 b <= 0;
+    //             end else begin
+    //                 r <= 0; g <= 0; b <= 0;
+    //             end
+    //         end else begin
+    //             sig_addr <= x + 12'h559;               // EMG address
+    //             y_val <= 480 - sig_data[11:4];         // Center EMG
+    //             if (y == y_val) begin
+    //                 r <= 4'hF;  // White for EMG
+    //                 g <= 4'hF;
+    //                 b <= 4'hF;
+    //             end else begin
+    //                 r <= 0; g <= 0; b <= 0;
+    //             end
+    //         end
+    //     end else begin
+    //         r <= 0; g <= 0; b <= 0;
+    //     end
+    // end
+
+    // assign VGA_R = r;
+    // assign VGA_G = g;
+    // assign VGA_B = b;
 
 endmodule
