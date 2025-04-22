@@ -16,7 +16,7 @@ start:
     # Initialize BPM calculation variables
     add $s4, $zero, $zero     # peak counter
     addi $s5, $zero, 0        # previous ECG value
-    addi $s6, $zero, 100      # threshold for peak detection
+    addi $s6, $zero, 3399     # threshold for peak detection (changed to 2620)
     add $s7, $zero, $zero     # state (0=below threshold, 1=above threshold)
     
 loop:
