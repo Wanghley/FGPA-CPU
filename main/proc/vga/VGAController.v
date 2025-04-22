@@ -90,7 +90,7 @@ module VGAController(
             pixelColor <= colorData;  // default image pixel
 
             // Check if inside the drawing box
-            if (x >= 40 && x < 390 && y >= 45 && y < 226) begin
+            if (x >= 55 && x < 390 && y >= 45 && y < 226) begin
                 if (x < 360) begin  // limit to 320 data points
                     sig_addr <= 12'h559 + x - 40;  // fetch address based on x
                     // Scale signal to box height (181 px): assume sig_data[11:4] is 8 bits
