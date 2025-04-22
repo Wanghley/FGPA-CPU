@@ -153,46 +153,49 @@ module VGAController(
     // Rendering logic
     reg [BITS_PER_COLOR-1:0] pixelColor;
 
+    // Inside the always @(posedge clock25)
     always @(posedge clock25) begin
         if (reset) begin
             sig_addr <= 12'd1704;
-        end else if (active) begin
+            bpm_value <= 0;
+            hundreds <= 0;
+            tens <= 0;
+            ones <= 0;
+            second_counter <= 0;
+            update_ready <= 1;
+        end else begin
             pixelColor <= colorData;
 
-            // Load BPM value once per second (when update_ready is high)
-            if (x == 0 && y == 0 && update_ready) begin
-                sig_addr <= 12'd1704;
-                update_ready <= 0; // Clear the update flag
-            end else if (x == 1 && y == 0 && (second_counter == 0)) begin
-                bpm_value <= sig_data;
-                hundreds <= (sig_data / 100) % 10;
-                tens <=    (sig_data / 10) % 10;
-                ones <=    sig_data % 10;
+            // === Update BPM Value once every second ===
+            if (screenEnd) begin  // One-shot per frame
+                if (second_counter >= 25000000) begin
+                    sig_addr <= 12'd1704;
+                    bpm_value <= sig_data;
+                    hundreds <= (sig_data / 100) % 10;
+                    tens     <= (sig_data / 10)  % 10;
+                    ones     <= sig_data % 10;
+                    second_counter <= 0;
+                end else begin
+                    second_counter <= second_counter + 1;
+                end
             end
 
-            // ECG signal rendering
+            // === Draw Signal (ECG + EMG) ===
             if (x >= 55 && x < 390 && y >= 45 && y < 226) begin
-                if (x < 360) begin
-                    sig_addr <= 12'h559 + x - 40;
-                    if (y == (350 - sig_data[11:4])) begin
-                        pixelColor <= 12'b000011110000;
-                    end
-                end
+                sig_addr <= 12'h559 + x - 55;
+                if (y == (350 - sig_data[11:4]))
+                    pixelColor <= 12'b0000_1111_0000; // green
             end
-            // EMG signal rendering
             else if (x >= 55 && x < 390 && y >= 254 && y < 434) begin
-                if (x < 360) begin
-                    sig_addr <= 12'h6AD + x - 40;
-                    if (y == (400 - sig_data[11:4])) begin
-                        pixelColor <= 12'b111100000000;
-                    end
-                end
+                sig_addr <= 12'h6AD + x - 55;
+                if (y == (400 - sig_data[11:4]))
+                    pixelColor <= 12'b1111_0000_0000; // red
             end
-            // BPM digits rendering: 3 digits, each 32x32, starting at x = 480, y = 100
+
+            // === Render BPM Digits using Sprites ===
             else if (x >= 480 && x < 576 && y >= 100 && y < 132) begin
                 row_offset = y - 100;
                 col_offset = x[4:0]; // x % 32
-
                 case ((x - 480) / 32)
                     2'd0: digit = hundreds;
                     2'd1: digit = tens;
@@ -200,20 +203,16 @@ module VGAController(
                     default: digit = 4'd0;
                 endcase
 
-                // Calculate sprite address: base 760 + digit*32 + row_offset
-                spriteAddr <= 760 + (digit * 32) + row_offset;
-                
-                // Check if the specific pixel in the sprite line should be on
+                // Compute sprite line address and get pixel bit
+                spriteAddr <= 760 + digit * 32 + row_offset;
                 digit_pixel_on = spriteData[31 - col_offset];
-                
-                if (digit_pixel_on) begin
-                    pixelColor <= 12'b111111111111; // white digit pixel
-                end
+
+                if (digit_pixel_on)
+                    pixelColor <= 12'b1111_1111_1111; // white
             end
-        end else begin
-            pixelColor <= 12'd0;
         end
     end
+
 
     assign {VGA_R, VGA_G, VGA_B} = pixelColor;
 
