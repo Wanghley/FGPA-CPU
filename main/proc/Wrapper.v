@@ -138,6 +138,7 @@ module Wrapper (
         .VGA_B(VGA_B),
         .hSync(hSync),
         .vSync(vSync),
+        .LED(LED),
         .sig_data(vga_data),
         .sig_addr(vga_addr)
     );
@@ -159,7 +160,7 @@ module Wrapper (
         .clock(clock),
         .ctrl_writeEnable(rwe), .ctrl_reset(reset),
         .ctrl_writeReg(rd),
-        .LED(LED),
+        // .LED(LED),
         .ctrl_readRegA(rs1), .ctrl_readRegB(rs2),
         .data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB)
     );

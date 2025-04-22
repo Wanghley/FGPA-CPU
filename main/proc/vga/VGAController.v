@@ -9,6 +9,8 @@ module VGAController(
     output [3:0] VGA_G,
     output [3:0] VGA_B,
 
+    output [15:0] LED,
+
     output reg [11:0] sig_addr,
     input      [31:0] sig_data
 );
@@ -115,6 +117,13 @@ module VGAController(
                 3'd3: max_emg <= sig_data[11:0];
             endcase
 
+            // show the maximum ECG to LEDs
+            if (init_counter == 3'd2) begin
+                LED[11:0] <= max_ecg;
+            end else begin
+                LED[11:0] <= 12'd0;
+            end
+
             init_counter <= init_counter + 1;
             pixelColor <= 12'd0;
             data_valid <= 0;
@@ -147,7 +156,7 @@ module VGAController(
 
                 // ECG area (top)
                 if (delayed_sig_addr >= 12'h559 && delayed_sig_addr < 12'h559 + 320) begin
-                    scaled_y <= 226 - (sig_data[8:0]); // use lower 9 bits directly
+                    scaled_y <= 181 * (sig_data-min_ecg)/(max_ecg-min_ecg) + 226; // use lower 9 bits directly
 
                     // Make line 3 pixels thick
                     if ((y >= scaled_y - 1) && (y <= scaled_y + 1))
@@ -160,7 +169,7 @@ module VGAController(
 
                 // EMG area (bottom)
                 else if (delayed_sig_addr >= 12'h6AD && delayed_sig_addr < 12'h6AD + 320) begin
-                    scaled_y <= 434 - (sig_data[8:0]); // use lower 9 bits directly
+                    scaled_y <= 180 * (sig_data[8:0] - min_emg) / (max_emg - min_emg) + 434; // use lower 9 bits directly
 
                     // Make line 3 pixels thick
                     if ((y >= scaled_y - 1) && (y <= scaled_y + 1))
