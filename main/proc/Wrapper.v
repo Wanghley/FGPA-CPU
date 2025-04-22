@@ -159,12 +159,10 @@ module Wrapper (
         .clock(clock),
         .ctrl_writeEnable(rwe), .ctrl_reset(reset),
         .ctrl_writeReg(rd),
-        // .LED(LED),
+        .LED(LED),
         .ctrl_readRegA(rs1), .ctrl_readRegB(rs2),
         .data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB)
     );
-
-    assign LED = (memAddr[11:0] == 12'h6AC) ? memDataOut[15:0] : 16'h0000;
 
     // ====================== //
     // === Data RAM Block === //
