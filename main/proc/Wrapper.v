@@ -176,6 +176,12 @@ module Wrapper (
     wire [31:0] dataInB;
     wire [31:0] dataOutB;
 
+    always @(posedge clock) begin
+        if (memAddr[11:0] == 12'h6AC) begin
+            $display("MIPS wrote to 0x6AC: %d", memDataIn);
+        end
+    end
+
     // Use sample_enable to select ADC write, otherwise allow VGA read
     // RAM hookup
     assign addrB = sample_enable ? adc_addr_mux : vga_addr;
