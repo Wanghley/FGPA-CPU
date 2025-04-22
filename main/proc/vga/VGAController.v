@@ -13,7 +13,7 @@ module VGAController(
     input      [31:0] sig_data
 );
     // File path for memory initialization
-    localparam FILES_PATH = "C:/Users/yg205/Documents/test/lab_kit/";
+    localparam FILES_PATH = "C:/Users/ws186/Documents/FGPA-CPU/assets/background/";
 
     // 25 MHz clock generation
     reg [1:0] pixCounter = 0;
