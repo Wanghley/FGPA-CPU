@@ -207,6 +207,4 @@ module Wrapper (
         .dataOutB(dataOutB)
     );
 
-    
-
 endmodule
