@@ -12,24 +12,20 @@ module VGAController(
     output reg [11:0] sig_addr,
     input      [31:0] sig_data
 );
-    localparam VIDEO_WIDTH  = 640;
-    localparam VIDEO_HEIGHT = 480;
+    // File path for memory initialization
+    localparam FILES_PATH = "C:/Users/ws186/Documents/FGPA-CPU/assets/background/";
 
-    // Generate 25 MHz clock
-    reg [1:0] pixCounter;
-    wire clock25;
-    
-    initial begin
-        pixCounter = 0;
-    end
-    
-    assign clock25 = pixCounter[1];
-    
+    // 25 MHz clock generation
+    reg [1:0] pixCounter = 0;
+    wire clock25 = pixCounter[1];
     always @(posedge clock) begin
         pixCounter <= pixCounter + 1;
     end
 
     // VGA timing
+    localparam VIDEO_WIDTH  = 640;
+    localparam VIDEO_HEIGHT = 480;
+
     wire active, screenEnd;
     wire [9:0] x;
     wire [8:0] y;
@@ -48,172 +44,113 @@ module VGAController(
         .y(y)
     );
 
-    // Image Data (Background)
-    localparam PIXEL_COUNT = VIDEO_WIDTH*VIDEO_HEIGHT;
-    localparam PIXEL_ADDRESS_WIDTH = $clog2(PIXEL_COUNT) + 1;
-    localparam BITS_PER_COLOR = 12;
-    localparam PALETTE_COLOR_COUNT = 256;
-    localparam PALETTE_ADDRESS_WIDTH = $clog2(PALETTE_COLOR_COUNT) + 1;
+    // Image Data to Map Pixel Location to Color Address
+	localparam 
+		PIXEL_COUNT = VIDEO_WIDTH*VIDEO_HEIGHT, 	             // Number of pixels on the screen
+		PIXEL_ADDRESS_WIDTH = $clog2(PIXEL_COUNT) + 1,           // Use built in log2 command
+		BITS_PER_COLOR = 12, 	  								 // Nexys A7 uses 12 bits/color
+		PALETTE_COLOR_COUNT = 256, 								 // Number of Colors available
+		PALETTE_ADDRESS_WIDTH = $clog2(PALETTE_COLOR_COUNT) + 1; // Use built in log2 Command
 
-    wire[PIXEL_ADDRESS_WIDTH-1:0] imgAddress = x + 640*y;
-    wire[PALETTE_ADDRESS_WIDTH-1:0] colorAddr;
+	wire[PIXEL_ADDRESS_WIDTH-1:0] imgAddress;  	 // Image address for the image data
+	wire[PALETTE_ADDRESS_WIDTH-1:0] colorAddr; 	 // Color address for the color palette
+	assign imgAddress = x + 640*y;				 // Address calculated coordinate
 
     VGA_RAM #(		
-        .DEPTH(PIXEL_COUNT),
-        .DATA_WIDTH(PALETTE_ADDRESS_WIDTH),
-        .ADDRESS_WIDTH(PIXEL_ADDRESS_WIDTH),
-        .MEMFILE("C:/Users/ws186/Documents/FGPA-CPU/assets/background/image.mem")
-    ) ImageData (
-        .clk(clock),
-        .addr(imgAddress),
-        .dataOut(colorAddr),
-        .wEn(1'b0)
-    );
+		.DEPTH(PIXEL_COUNT), 				     // Set RAM depth to contain every pixel
+		.DATA_WIDTH(PALETTE_ADDRESS_WIDTH),      // Set data width according to the color palette
+		.ADDRESS_WIDTH(PIXEL_ADDRESS_WIDTH),     // Set address with according to the pixel count
+		.MEMFILE({FILES_PATH, "image.mem"})) // Memory initialization
+	ImageData(
+		.clk(clock), 						 // Falling edge of the 100 MHz clk
+		.addr(imgAddress),					 // Image data address
+		.dataOut(colorAddr),				 // Color palette address
+		.wEn(1'b0)); 						 // We're always reading
 
-    wire [BITS_PER_COLOR-1:0] colorData;
-    VGA_RAM #(
-        .DEPTH(PALETTE_COLOR_COUNT),
-        .DATA_WIDTH(BITS_PER_COLOR),
-        .ADDRESS_WIDTH(PALETTE_ADDRESS_WIDTH),
-        .MEMFILE("C:/Users/ws186/Documents/FGPA-CPU/assets/background/colors.mem")
-    ) ColorPalette (
-        .clk(clock),
-        .addr(colorAddr),
-        .dataOut(colorData),
-        .wEn(1'b0)
-    );
+    // Color Palette to Map Color Address to 12-Bit Color
+	wire[BITS_PER_COLOR-1:0] colorData; // 12-bit color data at current pixel
 
-    // Sprite data for digits (0-9)
-    localparam SPRITE_COUNT = 10; // 10 digits (0-9)
-    localparam SPRITE_WIDTH = 32;
-    localparam SPRITE_HEIGHT = 32;
-    localparam SPRITE_LINES_TOTAL = SPRITE_COUNT * SPRITE_HEIGHT;
-    localparam SPRITE_ADDR_WIDTH = $clog2(SPRITE_LINES_TOTAL) + 1;
-    
-    reg [SPRITE_ADDR_WIDTH-1:0] spriteAddr;
-    wire [31:0] spriteData;
-    
-    VGA_RAM #(
-        .DEPTH(SPRITE_LINES_TOTAL),
-        .DATA_WIDTH(32),  // 32-bit lines for 32 pixels wide sprites
-        .ADDRESS_WIDTH(SPRITE_ADDR_WIDTH),
-        .MEMFILE("C:/Users/ws186/Documents/FGPA-CPU/assets/sprites.mem")
-    ) SpriteROM (
-        .clk(clock),
-        .addr(spriteAddr),
-        .dataOut(spriteData),
-        .wEn(1'b0)
-    );
+	VGA_RAM #(
+		.DEPTH(PALETTE_COLOR_COUNT), 		       // Set depth to contain every color		
+		.DATA_WIDTH(BITS_PER_COLOR), 		       // Set data width according to the bits per color
+		.ADDRESS_WIDTH(PALETTE_ADDRESS_WIDTH),     // Set address width according to the color count
+		.MEMFILE({FILES_PATH, "colors.mem"}))  // Memory initialization
+	ColorPalette(
+		.clk(clock), 							   	   // Rising edge of the 100 MHz clk
+		.addr(colorAddr),					       // Address from the ImageData RAM
+		.dataOut(colorData),				       // Color at current pixel
+		.wEn(1'b0)); 						       // We're always reading
 
-    // Shadow values of BPM digits
-    reg [3:0] hundreds;
-    reg [3:0] tens;
-    reg [3:0] ones;
 
-    // Track BPM value
-    reg [31:0] bpm_value;
-
-    // For digit rendering
-    reg [3:0] digit;
-    reg [9:0] row_offset;
-    reg [4:0] col_offset;
-    reg digit_pixel_on;
-
-    // 1-second timer for BPM updates
-    // For 25MHz clock, we need to count to 25,000,000 for 1 second
-    reg [24:0] second_counter;
-    reg update_ready;
-    
-    // Initialize registers
-    initial begin
-        hundreds = 0;
-        tens = 0;
-        ones = 0;
-        second_counter = 0;
-        update_ready = 1; // Start with ready to update
-    end
-
-    // 1-second counter logic
-    always @(posedge clock25) begin
-        if (reset) begin
-            second_counter <= 0;
-            update_ready <= 1;
-        end
-        else begin
-            if (second_counter >= 25000000) begin
-                second_counter <= 0;
-                update_ready <= 1;
-            end
-            else begin
-                second_counter <= second_counter + 1;
-            end
-        end
-    end
-
-    // Rendering logic
+    // Color Mapping
     reg [BITS_PER_COLOR-1:0] pixelColor;
 
-    // Inside the always @(posedge clock25)
     always @(posedge clock25) begin
-        if (reset) begin
-            sig_addr <= 12'd1704;
-            bpm_value <= 0;
-            hundreds <= 0;
-            tens <= 0;
-            ones <= 0;
-            second_counter <= 0;
-            update_ready <= 1;
-        end else begin
-            pixelColor <= colorData;
+        if (active) begin
+            pixelColor <= colorData;  // default image pixel
 
-            // === Update BPM Value once every second ===
-            if (screenEnd) begin  // One-shot per frame
-                if (second_counter >= 25000000) begin
-                    sig_addr <= 12'd1704;
-                    bpm_value <= sig_data;
-                    hundreds <= (sig_data / 100) % 10;
-                    tens     <= (sig_data / 10)  % 10;
-                    ones     <= sig_data % 10;
-                    second_counter <= 0;
-                end else begin
-                    second_counter <= second_counter + 1;
+            // Check if inside the drawing box
+            if (x >= 55 && x < 390 && y >= 45 && y < 226) begin
+                if (x < 360) begin  // limit to 320 data points
+                    sig_addr <= 12'h559 + x - 40;  // fetch address based on x
+                    // Scale signal to box height (181 px): assume sig_data[11:4] is 8 bits
+                    if (y == (350 - sig_data[11:4])) begin
+                        pixelColor <= 12'b000011110000; // green
+                    end
                 end
             end
-
-            // === Draw Signal (ECG + EMG) ===
-            if (x >= 55 && x < 390 && y >= 45 && y < 226) begin
-                sig_addr <= 12'h559 + x - 55;
-                if (y == (350 - sig_data[11:4]))
-                    pixelColor <= 12'b0000_1111_0000; // green
-            end
             else if (x >= 55 && x < 390 && y >= 254 && y < 434) begin
-                sig_addr <= 12'h6AD + x - 55;
-                if (y == (400 - sig_data[11:4]))
-                    pixelColor <= 12'b1111_0000_0000; // red
+                if (x < 360) begin  // limit to 320 data points
+                    sig_addr <= 12'h6AD + x - 40;  // fetch address based on x
+                    // Scale signal to box height (181 px): assume sig_data[11:4] is 8 bits
+                    if (y == (450 - sig_data[11:4])) begin
+                        pixelColor <= 12'b111100000000; // white
+                    end
+                end
             end
-
-            // === Render BPM Digits using Sprites ===
-            else if (x >= 480 && x < 576 && y >= 100 && y < 132) begin
-                row_offset = y - 100;
-                col_offset = x[4:0]; // x % 32
-                case ((x - 480) / 32)
-                    2'd0: digit = hundreds;
-                    2'd1: digit = tens;
-                    2'd2: digit = ones;
-                    default: digit = 4'd0;
-                endcase
-
-                // Compute sprite line address and get pixel bit
-                spriteAddr <= digit * 32 + row_offset;
-                digit_pixel_on = spriteData[31 - col_offset];
-
-                if (digit_pixel_on)
-                    pixelColor <= 12'b1111_1111_1111; // white
-            end
+        end else begin
+            pixelColor <= 12'd0; // black outside visible area
         end
     end
 
-
     assign {VGA_R, VGA_G, VGA_B} = pixelColor;
+
+
+    // OLD CODE FOR REFERENCE
+    // Color
+    // reg [3:0] r, g, b;
+    // reg [8:0] y_val;
+
+    // always @(posedge clock25) begin
+    //     if (active) begin
+    //         if (y < 240) begin
+    //             sig_addr <= x + 12'h801;               // ECG address
+    //             y_val <= 240 - sig_data[11:4];         // Center ECG
+    //             if (y == y_val) begin
+    //                 r <= 0;
+    //                 g <= 4'hF;  // Green for ECG
+    //                 b <= 0;
+    //             end else begin
+    //                 r <= 0; g <= 0; b <= 0;
+    //             end
+    //         end else begin
+    //             sig_addr <= x + 12'h559;               // EMG address
+    //             y_val <= 480 - sig_data[11:4];         // Center EMG
+    //             if (y == y_val) begin
+    //                 r <= 4'hF;  // White for EMG
+    //                 g <= 4'hF;
+    //                 b <= 4'hF;
+    //             end else begin
+    //                 r <= 0; g <= 0; b <= 0;
+    //             end
+    //         end
+    //     end else begin
+    //         r <= 0; g <= 0; b <= 0;
+    //     end
+    // end
+
+    // assign VGA_R = r;
+    // assign VGA_G = g;
+    // assign VGA_B = b;
 
 endmodule
