@@ -21,7 +21,7 @@ module VGAController(
     end
 
     // VGA timing
-    localparam VIDEO_WIDTH  = 640;
+    localparam VIDEO_WIDTH  = 800;
     localparam VIDEO_HEIGHT = 480;
 
     wire active, screenEnd;
