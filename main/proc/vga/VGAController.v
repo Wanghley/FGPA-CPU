@@ -12,6 +12,8 @@ module VGAController(
     output reg [11:0] sig_addr,
     input      [31:0] sig_data
 );
+    // File path for memory initialization
+    localparam FILES_PATH = "C:/Users/yg205/Documents/test/lab_kit/";
 
     // 25 MHz clock generation
     reg [1:0] pixCounter = 0;
@@ -42,40 +44,85 @@ module VGAController(
         .y(y)
     );
 
+    // Image Data to Map Pixel Location to Color Address
+	localparam 
+		PIXEL_COUNT = VIDEO_WIDTH*VIDEO_HEIGHT, 	             // Number of pixels on the screen
+		PIXEL_ADDRESS_WIDTH = $clog2(PIXEL_COUNT) + 1,           // Use built in log2 command
+		BITS_PER_COLOR = 12, 	  								 // Nexys A7 uses 12 bits/color
+		PALETTE_COLOR_COUNT = 256, 								 // Number of Colors available
+		PALETTE_ADDRESS_WIDTH = $clog2(PALETTE_COLOR_COUNT) + 1; // Use built in log2 Command
+
+	wire[PIXEL_ADDRESS_WIDTH-1:0] imgAddress;  	 // Image address for the image data
+	wire[PALETTE_ADDRESS_WIDTH-1:0] colorAddr; 	 // Color address for the color palette
+	assign imgAddress = x + 640*y;				 // Address calculated coordinate
+
+    VGA_RAM #(		
+		.DEPTH(PIXEL_COUNT), 				     // Set RAM depth to contain every pixel
+		.DATA_WIDTH(PALETTE_ADDRESS_WIDTH),      // Set data width according to the color palette
+		.ADDRESS_WIDTH(PIXEL_ADDRESS_WIDTH),     // Set address with according to the pixel count
+		.MEMFILE({FILES_PATH, "image.mem"})) // Memory initialization
+	ImageData(
+		.clk(clock), 						 // Falling edge of the 100 MHz clk
+		.addr(imgAddress),					 // Image data address
+		.dataOut(colorAddr),				 // Color palette address
+		.wEn(1'b0)); 						 // We're always reading
+
+    // Color Palette to Map Color Address to 12-Bit Color
+	wire[BITS_PER_COLOR-1:0] colorData; // 12-bit color data at current pixel
+
+	VGA_RAM #(
+		.DEPTH(PALETTE_COLOR_COUNT), 		       // Set depth to contain every color		
+		.DATA_WIDTH(BITS_PER_COLOR), 		       // Set data width according to the bits per color
+		.ADDRESS_WIDTH(PALETTE_ADDRESS_WIDTH),     // Set address width according to the color count
+		.MEMFILE({FILES_PATH, "colors.mem"}))  // Memory initialization
+	ColorPalette(
+		.clk(clock), 							   	   // Rising edge of the 100 MHz clk
+		.addr(colorAddr),					       // Address from the ImageData RAM
+		.dataOut(colorData),				       // Color at current pixel
+		.wEn(1'b0)); 						       // We're always reading
+
+    // Assign to output color from register if active
+	wire[BITS_PER_COLOR-1:0] colorOut; 			  // Output color 
+	assign colorOut = active ? colorData : 12'd0; // When not active, output black
+
+	// Quickly assign the output colors to their channels using concatenation
+	assign {VGA_R, VGA_G, VGA_B} = colorOut;
+
+    // OLD CODE FOR REFERENCE
     // Color
-    reg [3:0] r, g, b;
-    reg [8:0] y_val;
+    // reg [3:0] r, g, b;
+    // reg [8:0] y_val;
 
-    always @(posedge clock25) begin
-        if (active) begin
-            if (y < 240) begin
-                sig_addr <= x + 12'h801;               // ECG address
-                y_val <= 240 - sig_data[11:4];         // Center ECG
-                if (y == y_val) begin
-                    r <= 0;
-                    g <= 4'hF;  // Green for ECG
-                    b <= 0;
-                end else begin
-                    r <= 0; g <= 0; b <= 0;
-                end
-            end else begin
-                sig_addr <= x + 12'h559;               // EMG address
-                y_val <= 480 - sig_data[11:4];         // Center EMG
-                if (y == y_val) begin
-                    r <= 4'hF;  // White for EMG
-                    g <= 4'hF;
-                    b <= 4'hF;
-                end else begin
-                    r <= 0; g <= 0; b <= 0;
-                end
-            end
-        end else begin
-            r <= 0; g <= 0; b <= 0;
-        end
-    end
+    // always @(posedge clock25) begin
+    //     if (active) begin
+    //         if (y < 240) begin
+    //             sig_addr <= x + 12'h801;               // ECG address
+    //             y_val <= 240 - sig_data[11:4];         // Center ECG
+    //             if (y == y_val) begin
+    //                 r <= 0;
+    //                 g <= 4'hF;  // Green for ECG
+    //                 b <= 0;
+    //             end else begin
+    //                 r <= 0; g <= 0; b <= 0;
+    //             end
+    //         end else begin
+    //             sig_addr <= x + 12'h559;               // EMG address
+    //             y_val <= 480 - sig_data[11:4];         // Center EMG
+    //             if (y == y_val) begin
+    //                 r <= 4'hF;  // White for EMG
+    //                 g <= 4'hF;
+    //                 b <= 4'hF;
+    //             end else begin
+    //                 r <= 0; g <= 0; b <= 0;
+    //             end
+    //         end
+    //     end else begin
+    //         r <= 0; g <= 0; b <= 0;
+    //     end
+    // end
 
-    assign VGA_R = r;
-    assign VGA_G = g;
-    assign VGA_B = b;
+    // assign VGA_R = r;
+    // assign VGA_G = g;
+    // assign VGA_B = b;
 
 endmodule
