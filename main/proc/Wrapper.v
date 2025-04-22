@@ -32,7 +32,7 @@ module Wrapper (
     // =============================== //
     // === Instruction Memory File === //
     // =============================== //
-    localparam INSTR_FILE = "emg-test";
+    localparam INSTR_FILE = "downsampling-signal";
 
     // ============================= //
     // === Instantiate Processor === //
