@@ -91,21 +91,25 @@ module VGAController(
     // --------- Color Mapping for ECG and EMG Signals ----------- //
     // ----------------------------------------------------------- //
 
-    // === Preload and Scaling Registers ===
+    // Signal min/max values preload
     reg [11:0] min_ecg = 0, max_ecg = 4095;
     reg [11:0] min_emg = 0, max_emg = 4095;
     reg [2:0] init_counter = 0;
     reg [11:0] preload_addr;
 
+    // Signal memory coordination
     reg [11:0] delayed_sig_addr;
     reg [31:0] sig_data_reg;
+    reg [31:0] sig_data_prev;
     reg        data_valid;
 
-
-    reg [31:0] scaled_val;
     reg [8:0]  scaled_y;
+    wire [31:0] range_ecg = max_ecg - min_ecg;
+    wire [31:0] range_emg = max_emg - min_emg;
 
     always @(posedge clock25) begin
+        sig_data_prev <= sig_data;
+
         if (init_counter < 4) begin
             preload_addr <= 12'd1705 + init_counter;
             sig_addr <= preload_addr;
@@ -116,76 +120,57 @@ module VGAController(
                 3'd2: max_ecg <= sig_data[11:0];
                 3'd3: max_emg <= sig_data[11:0];
             endcase
-
-            // show the maximum ECG to LEDs
-            if (init_counter == 3'd2) begin
-                LED[11:0] <= max_ecg;
-            end else begin
-                LED[11:0] <= 12'd0;
-            end
+        LED[11:0] <= (init_counter == 3'd2) ? sig_data[11:0] : 12'd0;
 
             init_counter <= init_counter + 1;
             pixelColor <= 12'd0;
             data_valid <= 0;
-
         end else if (active) begin
-            pixelColor <= colorData;  // default image pixel
-
+            pixelColor <= colorData;
             data_valid <= 0;
 
-            // Top ECG box
+            // ECG box: x = [55, 390), y = [45, 226)
             if (x >= 55 && x < 390 && y >= 45 && y < 226) begin
-                if (x < 375) begin  // Give some margin for edge cases
-                    sig_addr <= 12'h559 + (x - 55);  // Offset properly from the left edge
+                if (x < 375) begin
+                    sig_addr <= 12'h559 + (x - 55);
                     delayed_sig_addr <= 12'h559 + (x - 55);
                     data_valid <= 1;
                 end
             end
-            // Bottom EMG box
+
+            // EMG box: x = [55, 390), y = [254, 434)
             else if (x >= 55 && x < 390 && y >= 254 && y < 434) begin
-                if (x < 375) begin  // Give some margin for edge cases
-                    sig_addr <= 12'h6AD + (x - 55);  // Offset properly from the left edge
+                if (x < 375) begin
+                    sig_addr <= 12'h6AD + (x - 55);
                     delayed_sig_addr <= 12'h6AD + (x - 55);
                     data_valid <= 1;
                 end
             end
 
-            // === Scale logic (1 cycle after addr is set) ===
-                        if (data_valid) begin
-                sig_data_reg <= sig_data;
+            // One-cycle delayed usage of sig_data
+            if (data_valid) begin
+                sig_data_reg <= sig_data_prev;
 
-                // ECG area (top)
                 if (delayed_sig_addr >= 12'h559 && delayed_sig_addr < 12'h559 + 320) begin
-                    scaled_y <= 181 * (sig_data-min_ecg)/(max_ecg-min_ecg) + 226; // use lower 9 bits directly
-
-                    // Make line 3 pixels thick
+                    scaled_y <= 226 - ((sig_data_prev - min_ecg) * 181 / range_ecg);
                     if ((y >= scaled_y - 1) && (y <= scaled_y + 1))
-                        pixelColor <= 12'b000011110000; // green
-
-                    // Draw grid lines (optional)
+                        pixelColor <= 12'b000011110000; // Green for ECG
                     else if (y % 20 == 0 || x % 20 == 0)
                         pixelColor <= 12'b000100010001;
-                end
-
-                // EMG area (bottom)
-                else if (delayed_sig_addr >= 12'h6AD && delayed_sig_addr < 12'h6AD + 320) begin
-                    scaled_y <= 180 * (sig_data[8:0] - min_emg) / (max_emg - min_emg) + 434; // use lower 9 bits directly
-
-                    // Make line 3 pixels thick
+                end else if (delayed_sig_addr >= 12'h6AD && delayed_sig_addr < 12'h6AD + 320) begin
+                    scaled_y <= 254 + ((sig_data_prev[8:0] - min_emg) * 180 / range_emg);
                     if ((y >= scaled_y - 1) && (y <= scaled_y + 1))
-                        pixelColor <= 12'b111100000000; // red
-
-                    // Draw grid lines (optional)
+                        pixelColor <= 12'b111100000000; // Red for EMG
                     else if (y % 20 == 0 || x % 20 == 0)
                         pixelColor <= 12'b000100010001;
                 end
             end
+
         end else begin
             pixelColor <= 12'd0;
             data_valid <= 0;
         end
     end
-
 
 
     assign {VGA_R, VGA_G, VGA_B} = pixelColor;
