@@ -120,7 +120,7 @@ module VGAController(
                 3'd2: max_ecg <= sig_data[11:0];
                 3'd3: max_emg <= sig_data[11:0];
             endcase
-        LED[11:0] <= (init_counter == 3'd2) ? sig_data[11:0] : 12'd0;
+        // LED[11:0] <= (init_counter == 3'd2) ? sig_data[11:0] : 12'd0;
 
             init_counter <= init_counter + 1;
             pixelColor <= 12'd0;
