@@ -81,12 +81,31 @@ module VGAController(
 		.dataOut(colorData),				       // Color at current pixel
 		.wEn(1'b0)); 						       // We're always reading
 
-    // Assign to output color from register if active
-	wire[BITS_PER_COLOR-1:0] colorOut; 			  // Output color 
-	assign colorOut = active ? colorData : 12'd0; // When not active, output black
 
-	// Quickly assign the output colors to their channels using concatenation
-	assign {VGA_R, VGA_G, VGA_B} = colorOut;
+    // Color Mapping
+    reg [BITS_PER_COLOR-1:0] pixelColor;
+
+    always @(posedge clock25) begin
+        if (active) begin
+            pixelColor <= colorData;  // default image pixel
+
+            // Check if inside the drawing box
+            if (x >= 40 && x < 390 && y >= 45 && y < 226) begin
+                if (x < 360) begin  // limit to 320 data points
+                    sig_addr <= 12'h559 + x - 40;  // fetch address based on x
+                    // Scale signal to box height (181 px): assume sig_data[11:4] is 8 bits
+                    if (y == (226 - sig_data[11:4])) begin
+                        pixelColor <= 12'b000011110000; // green
+                    end
+                end
+            end
+        end else begin
+            pixelColor <= 12'd0; // black outside visible area
+        end
+    end
+
+    assign {VGA_R, VGA_G, VGA_B} = pixelColor;
+
 
     // OLD CODE FOR REFERENCE
     // Color
