@@ -1,34 +1,79 @@
 start:
     # Base addresses
-    addi $t1, $zero, 1709     # EMG output base address = 0x6AD
-    addi $t7, $zero, 1369     # ECG output base address = 0x559
+    addi $t1, $zero, 1709     # ECG output base address = 0x6AD
+    addi $t7, $zero, 1369     # EMG output base address = 0x559
     addi $t2, $zero, 0        # counter = 0
     addi $t5, $zero, 320      # max count = 320
     addi $t3, $zero, 2049     # EMG input base address = 0x801
-    addi $t4, $zero, 3199        # ECG input base address = 0xC7F
-    
+    addi $t4, $zero, 3199     # ECG input base address = 0xC7F
 
-    # Constants
-    # addi $t4, $zero, 1000     # EMG constant
-    # addi $t6, $zero, 1500     # ECG constant
+    # Init min/max values
+    addi $t8, $zero, 4095     # min ECG
+    addi $t9, $zero, 4095     # min EMG
+    add  $s0, $zero, $zero    # max ECG
+    add  $s1, $zero, $zero    # max EMG
 
 loop:
     blt  $t2, $t5, do_copy
-    j    done
+    j    save_min_max
 
 do_copy:
-    # Copy EMG and ECG data
-    lw   $t6, 0($t3)          # read EMG data
-    lw   $t0, 0($t4)          # read ECG data
+    lw   $s2, 0($t3)          # EMG input
+    lw   $s3, 0($t4)          # ECG input
 
-    sw   $t0, 0($t1)          # write EMG data to output
-    sw   $t6, 0($t7)          # write ECG data to output
-    addi $t1, $t1, 1          # EMG output++
-    addi $t7, $t7, 1          # ECG output++
-    addi $t2, $t2, 1          # counter++
-    addi $t3, $t3, 1          # EMG input++
-    addi $t4, $t4, 1          # ECG input++
+    # Write to output
+    sw   $s3, 0($t1)          # ECG output
+    sw   $s2, 0($t7)          # EMG output
+    addi $t1, $t1, 1
+    addi $t7, $t7, 1
+
+    # Update min ECG
+    blt  $s3, $t8, update_min_ecg
+skip_min_ecg:
+
+    # Update max ECG → if s0 < s3 (i.e. s3 > s0)
+    blt  $s0, $s3, update_max_ecg
+skip_max_ecg:
+
+    # Update min EMG
+    blt  $s2, $t9, update_min_emg
+skip_min_emg:
+
+    # Update max EMG → if s1 < s2 (i.e. s2 > s1)
+    blt  $s1, $s2, update_max_emg
+skip_max_emg:
+
+    # Advance
+    addi $t2, $t2, 1
+    addi $t3, $t3, 1
+    addi $t4, $t4, 1
     j    loop
 
-done:
-    j    start                # loop forever
+update_min_ecg:
+    add  $t8, $s3, $zero
+    j    skip_min_ecg
+
+update_max_ecg:
+    add  $s0, $s3, $zero
+    j    skip_max_ecg
+
+update_min_emg:
+    add  $t9, $s2, $zero
+    j    skip_min_emg
+
+update_max_emg:
+    add  $s1, $s2, $zero
+    j    skip_max_emg
+
+save_min_max:
+    # Save: 1705=min ECG, 1706=min EMG, 1707=max ECG, 1708=max EMG
+    addi $t0, $zero, 1705
+    sw   $t8, 0($t0)
+    addi $t0, $t0, 1
+    sw   $t9, 0($t0)
+    addi $t0, $t0, 1
+    sw   $s0, 0($t0)
+    addi $t0, $t0, 1
+    sw   $s1, 0($t0)
+
+    j    start              # loop forever
