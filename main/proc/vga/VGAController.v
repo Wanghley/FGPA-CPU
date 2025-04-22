@@ -95,6 +95,11 @@ module VGAController(
     reg [2:0] init_counter = 0;
     reg [11:0] preload_addr;
 
+    reg [11:0] delayed_sig_addr;
+    reg [31:0] sig_data_reg;
+    reg        data_valid;
+
+
     reg [31:0] scaled_val;
     reg [8:0]  scaled_y;
 
@@ -111,15 +116,37 @@ module VGAController(
             endcase
 
             init_counter <= init_counter + 1;
-            pixelColor <= 12'd0; // blank screen during preload
-        end else if (active) begin
-            pixelColor <= colorData;  // default background
+            pixelColor <= 12'd0;
+            data_valid <= 0;
 
-            // === ECG BOX (Top rectangle: y = 45–226) ===
+        end else if (active) begin
+            pixelColor <= colorData;  // default image pixel
+
+            data_valid <= 0;
+
+            // Top ECG box
             if (x >= 55 && x < 390 && y >= 45 && y < 226) begin
                 if (x < 360) begin
                     sig_addr <= 12'h559 + x - 40;
+                    delayed_sig_addr <= 12'h559 + x - 40;
+                    data_valid <= 1;
+                end
+            end
+            // Bottom EMG box
+            else if (x >= 55 && x < 390 && y >= 254 && y < 434) begin
+                if (x < 360) begin
+                    sig_addr <= 12'h6AD + x - 40;
+                    delayed_sig_addr <= 12'h6AD + x - 40;
+                    data_valid <= 1;
+                end
+            end
 
+            // === Scale logic (1 cycle after addr is set) ===
+            if (data_valid) begin
+                sig_data_reg <= sig_data;
+
+                // ECG area
+                if (delayed_sig_addr >= 12'h559 && delayed_sig_addr < 12'h559 + 320) begin
                     if (max_ecg != min_ecg)
                         scaled_val <= ((sig_data[11:0] - min_ecg) * 181) / (max_ecg - min_ecg);
                     else
@@ -131,11 +158,8 @@ module VGAController(
                         pixelColor <= 12'b000011110000; // green
                 end
 
-            // === EMG BOX (Bottom rectangle: y = 254–434) ===
-            end else if (x >= 55 && x < 390 && y >= 254 && y < 434) begin
-                if (x < 360) begin
-                    sig_addr <= 12'h6AD + x - 40;
-
+                // EMG area
+                else if (delayed_sig_addr >= 12'h6AD && delayed_sig_addr < 12'h6AD + 320) begin
                     if (max_emg != min_emg)
                         scaled_val <= ((sig_data[11:0] - min_emg) * 181) / (max_emg - min_emg);
                     else
@@ -148,9 +172,11 @@ module VGAController(
                 end
             end
         end else begin
-            pixelColor <= 12'd0; // black outside active area
+            pixelColor <= 12'd0;
+            data_valid <= 0;
         end
     end
+
 
 
     assign {VGA_R, VGA_G, VGA_B} = pixelColor;
