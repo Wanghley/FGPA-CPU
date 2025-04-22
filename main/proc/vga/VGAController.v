@@ -142,43 +142,33 @@ module VGAController(
             end
 
             // === Scale logic (1 cycle after addr is set) ===
-            if (data_valid) begin
+                        if (data_valid) begin
                 sig_data_reg <= sig_data;
 
-                // ECG area
+                // ECG area (top)
                 if (delayed_sig_addr >= 12'h559 && delayed_sig_addr < 12'h559 + 320) begin
-                    if (max_ecg != min_ecg)
-                        scaled_val <= ((sig_data[11:0] - min_ecg) * 170) / (max_ecg - min_ecg);
-                    else
-                        scaled_val <= 85;
-
-                    scaled_y <= 226 - scaled_val[8:0];
+                    scaled_y <= 226 - (sig_data[8:0]); // use lower 9 bits directly
 
                     // Make line 3 pixels thick
                     if ((y >= scaled_y - 1) && (y <= scaled_y + 1))
                         pixelColor <= 12'b000011110000; // green
-                    
+
                     // Draw grid lines (optional)
                     else if (y % 20 == 0 || x % 20 == 0)
-                        pixelColor <= 12'b000100010001; // dim grid
+                        pixelColor <= 12'b000100010001;
                 end
 
-                // EMG area
+                // EMG area (bottom)
                 else if (delayed_sig_addr >= 12'h6AD && delayed_sig_addr < 12'h6AD + 320) begin
-                    if (max_emg != min_emg)
-                        scaled_val <= ((sig_data[11:0] - min_emg) * 170) / (max_emg - min_emg);
-                    else
-                        scaled_val <= 85;
-
-                    scaled_y <= 434 - scaled_val[8:0];
+                    scaled_y <= 434 - (sig_data[8:0]); // use lower 9 bits directly
 
                     // Make line 3 pixels thick
                     if ((y >= scaled_y - 1) && (y <= scaled_y + 1))
                         pixelColor <= 12'b111100000000; // red
-                    
+
                     // Draw grid lines (optional)
                     else if (y % 20 == 0 || x % 20 == 0)
-                        pixelColor <= 12'b000100010001; // dim grid
+                        pixelColor <= 12'b000100010001;
                 end
             end
         end else begin
@@ -190,43 +180,5 @@ module VGAController(
 
 
     assign {VGA_R, VGA_G, VGA_B} = pixelColor;
-
-
-    // OLD CODE FOR REFERENCE
-    // Color
-    // reg [3:0] r, g, b;
-    // reg [8:0] y_val;
-
-    // always @(posedge clock25) begin
-    //     if (active) begin
-    //         if (y < 240) begin
-    //             sig_addr <= x + 12'h801;               // ECG address
-    //             y_val <= 240 - sig_data[11:4];         // Center ECG
-    //             if (y == y_val) begin
-    //                 r <= 0;
-    //                 g <= 4'hF;  // Green for ECG
-    //                 b <= 0;
-    //             end else begin
-    //                 r <= 0; g <= 0; b <= 0;
-    //             end
-    //         end else begin
-    //             sig_addr <= x + 12'h559;               // EMG address
-    //             y_val <= 480 - sig_data[11:4];         // Center EMG
-    //             if (y == y_val) begin
-    //                 r <= 4'hF;  // White for EMG
-    //                 g <= 4'hF;
-    //                 b <= 4'hF;
-    //             end else begin
-    //                 r <= 0; g <= 0; b <= 0;
-    //             end
-    //         end
-    //     end else begin
-    //         r <= 0; g <= 0; b <= 0;
-    //     end
-    // end
-
-    // assign VGA_R = r;
-    // assign VGA_G = g;
-    // assign VGA_B = b;
 
 endmodule
