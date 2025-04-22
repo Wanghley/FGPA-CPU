@@ -1,0 +1,571 @@
+#-----------------------------------------------------------
+# Vivado v2021.1 (64-bit)
+# SW Build 3247384 on Thu Jun 10 19:36:33 MDT 2021
+# IP Build 3246043 on Fri Jun 11 00:30:35 MDT 2021
+# Start of session at: Tue Apr 22 17:02:42 2025
+# Process ID: 6588
+# Current directory: C:/Users/ws186/Documents/Vivado projects/CPU-ECG-EMG-portable-device/CPU-ECG-EMG-portable-device.runs/synth_1
+# Command line: vivado.exe -log Wrapper.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source Wrapper.tcl
+# Log file: C:/Users/ws186/Documents/Vivado projects/CPU-ECG-EMG-portable-device/CPU-ECG-EMG-portable-device.runs/synth_1/Wrapper.vds
+# Journal file: C:/Users/ws186/Documents/Vivado projects/CPU-ECG-EMG-portable-device/CPU-ECG-EMG-portable-device.runs/synth_1\vivado.jou
+#-----------------------------------------------------------
+source Wrapper.tcl -notrace
+Command: synth_design -top Wrapper -part xc7a100tcsg324-1
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7a100t'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a100t'
+INFO: [Device 21-403] Loading part xc7a100tcsg324-1
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 29040
+WARNING: [Synth 8-1935] empty port in module declaration [C:/Users/ws186/Documents/FGPA-CPU/main/proc/control.v:15]
+WARNING: [Synth 8-6901] identifier 'dividend_processed' is used before its declaration [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/divider.v:35]
+WARNING: [Synth 8-6901] identifier 'shifted_product' is used before its declaration [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/multiplier.v:47]
+WARNING: [Synth 8-6901] identifier 'ctrl_flow_change' is used before its declaration [C:/Users/ws186/Documents/FGPA-CPU/main/proc/processor.v:146]
+WARNING: [Synth 8-6901] identifier 'jump_pc' is used before its declaration [C:/Users/ws186/Documents/FGPA-CPU/main/proc/processor.v:146]
+WARNING: [Synth 8-6901] identifier 'multdiv_hazard' is used before its declaration [C:/Users/ws186/Documents/FGPA-CPU/main/proc/processor.v:173]
+WARNING: [Synth 8-6901] identifier 'multdiv_hazard' is used before its declaration [C:/Users/ws186/Documents/FGPA-CPU/main/proc/processor.v:174]
+WARNING: [Synth 8-6901] identifier 'multdiv_hazard' is used before its declaration [C:/Users/ws186/Documents/FGPA-CPU/main/proc/processor.v:175]
+WARNING: [Synth 8-6901] identifier 'is_jump_ex' is used before its declaration [C:/Users/ws186/Documents/FGPA-CPU/main/proc/processor.v:176]
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:03 ; elapsed = 00:00:03 . Memory (MB): peak = 1329.391 ; gain = 0.000
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'Wrapper' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/Wrapper.v:10]
+INFO: [Synth 8-6157] synthesizing module 'processor' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/processor.v:20]
+INFO: [Synth 8-6157] synthesizing module 'latch' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/latch.v:1]
+INFO: [Synth 8-6157] synthesizing module 'register' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/regfile/register.v:1]
+INFO: [Synth 8-6157] synthesizing module 'dffe_ref' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/regfile/dffe_ref.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'dffe_ref' (1#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/regfile/dffe_ref.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'register' (2#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/regfile/register.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'latch' (3#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/latch.v:1]
+INFO: [Synth 8-6157] synthesizing module 'cla' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/cla.v:5]
+INFO: [Synth 8-6157] synthesizing module 'block' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/cla.v:55]
+INFO: [Synth 8-6157] synthesizing module 'fulladder' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/cla.v:139]
+INFO: [Synth 8-6155] done synthesizing module 'fulladder' (4#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/cla.v:139]
+INFO: [Synth 8-6155] done synthesizing module 'block' (5#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/cla.v:55]
+INFO: [Synth 8-6155] done synthesizing module 'cla' (6#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/cla.v:5]
+INFO: [Synth 8-6157] synthesizing module 'sra' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:56]
+INFO: [Synth 8-6157] synthesizing module 'sra16' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:457]
+INFO: [Synth 8-6155] done synthesizing module 'sra16' (7#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:457]
+INFO: [Synth 8-6157] synthesizing module 'mux_2_1' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/mux.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'mux_2_1' (8#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/mux.v:1]
+INFO: [Synth 8-6157] synthesizing module 'sra8' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:419]
+INFO: [Synth 8-6155] done synthesizing module 'sra8' (9#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:419]
+INFO: [Synth 8-6157] synthesizing module 'sra4' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:381]
+INFO: [Synth 8-6155] done synthesizing module 'sra4' (10#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:381]
+INFO: [Synth 8-6157] synthesizing module 'sra2' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:343]
+INFO: [Synth 8-6155] done synthesizing module 'sra2' (11#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:343]
+INFO: [Synth 8-6157] synthesizing module 'sra1' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:305]
+INFO: [Synth 8-6155] done synthesizing module 'sra1' (12#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:305]
+INFO: [Synth 8-6155] done synthesizing module 'sra' (13#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:56]
+INFO: [Synth 8-6157] synthesizing module 'stall' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:1]
+INFO: [Synth 8-6157] synthesizing module 'instrdecoder' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/instrdecoder.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'instrdecoder' (14#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/instrdecoder.v:1]
+WARNING: [Synth 8-7071] port 'rs' of module 'instrdecoder' is unconnected for instance 'decoder_dx' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:5]
+WARNING: [Synth 8-7071] port 'rd' of module 'instrdecoder' is unconnected for instance 'decoder_dx' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:5]
+WARNING: [Synth 8-7071] port 'shamt' of module 'instrdecoder' is unconnected for instance 'decoder_dx' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:5]
+WARNING: [Synth 8-7071] port 'aluop' of module 'instrdecoder' is unconnected for instance 'decoder_dx' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:5]
+WARNING: [Synth 8-7071] port 'imm' of module 'instrdecoder' is unconnected for instance 'decoder_dx' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:5]
+WARNING: [Synth 8-7071] port 'target' of module 'instrdecoder' is unconnected for instance 'decoder_dx' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:5]
+WARNING: [Synth 8-7023] instance 'decoder_dx' of module 'instrdecoder' has 9 connections declared, but only 3 given [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:5]
+WARNING: [Synth 8-7071] port 'rd' of module 'instrdecoder' is unconnected for instance 'decoder_fd' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:10]
+WARNING: [Synth 8-7071] port 'shamt' of module 'instrdecoder' is unconnected for instance 'decoder_fd' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:10]
+WARNING: [Synth 8-7071] port 'aluop' of module 'instrdecoder' is unconnected for instance 'decoder_fd' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:10]
+WARNING: [Synth 8-7071] port 'imm' of module 'instrdecoder' is unconnected for instance 'decoder_fd' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:10]
+WARNING: [Synth 8-7071] port 'target' of module 'instrdecoder' is unconnected for instance 'decoder_fd' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:10]
+WARNING: [Synth 8-7023] instance 'decoder_fd' of module 'instrdecoder' has 9 connections declared, but only 4 given [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:10]
+INFO: [Synth 8-6155] done synthesizing module 'stall' (15#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/stall.v:1]
+INFO: [Synth 8-6157] synthesizing module 'bypass' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:1]
+WARNING: [Synth 8-7071] port 'opcode' of module 'instrdecoder' is unconnected for instance 'decoder_IR_DX' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:28]
+WARNING: [Synth 8-7071] port 'rs' of module 'instrdecoder' is unconnected for instance 'decoder_IR_DX' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:28]
+WARNING: [Synth 8-7071] port 'rd' of module 'instrdecoder' is unconnected for instance 'decoder_IR_DX' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:28]
+WARNING: [Synth 8-7071] port 'shamt' of module 'instrdecoder' is unconnected for instance 'decoder_IR_DX' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:28]
+WARNING: [Synth 8-7071] port 'aluop' of module 'instrdecoder' is unconnected for instance 'decoder_IR_DX' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:28]
+WARNING: [Synth 8-7071] port 'imm' of module 'instrdecoder' is unconnected for instance 'decoder_IR_DX' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:28]
+WARNING: [Synth 8-7071] port 'target' of module 'instrdecoder' is unconnected for instance 'decoder_IR_DX' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:28]
+WARNING: [Synth 8-7023] instance 'decoder_IR_DX' of module 'instrdecoder' has 9 connections declared, but only 2 given [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:28]
+WARNING: [Synth 8-7071] port 'opcode' of module 'instrdecoder' is unconnected for instance 'decoder_IR_XM' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:34]
+WARNING: [Synth 8-7071] port 'rs' of module 'instrdecoder' is unconnected for instance 'decoder_IR_XM' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:34]
+WARNING: [Synth 8-7071] port 'rd' of module 'instrdecoder' is unconnected for instance 'decoder_IR_XM' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:34]
+WARNING: [Synth 8-7071] port 'shamt' of module 'instrdecoder' is unconnected for instance 'decoder_IR_XM' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:34]
+WARNING: [Synth 8-7071] port 'aluop' of module 'instrdecoder' is unconnected for instance 'decoder_IR_XM' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:34]
+WARNING: [Synth 8-7071] port 'imm' of module 'instrdecoder' is unconnected for instance 'decoder_IR_XM' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:34]
+WARNING: [Synth 8-7071] port 'target' of module 'instrdecoder' is unconnected for instance 'decoder_IR_XM' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:34]
+WARNING: [Synth 8-7023] instance 'decoder_IR_XM' of module 'instrdecoder' has 9 connections declared, but only 2 given [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:34]
+WARNING: [Synth 8-7071] port 'opcode' of module 'instrdecoder' is unconnected for instance 'decoder_jr_reg' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:119]
+WARNING: [Synth 8-7071] port 'rs' of module 'instrdecoder' is unconnected for instance 'decoder_jr_reg' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:119]
+WARNING: [Synth 8-7071] port 'rt' of module 'instrdecoder' is unconnected for instance 'decoder_jr_reg' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:119]
+WARNING: [Synth 8-7071] port 'shamt' of module 'instrdecoder' is unconnected for instance 'decoder_jr_reg' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:119]
+WARNING: [Synth 8-7071] port 'aluop' of module 'instrdecoder' is unconnected for instance 'decoder_jr_reg' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:119]
+WARNING: [Synth 8-7071] port 'imm' of module 'instrdecoder' is unconnected for instance 'decoder_jr_reg' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:119]
+WARNING: [Synth 8-7071] port 'target' of module 'instrdecoder' is unconnected for instance 'decoder_jr_reg' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:119]
+WARNING: [Synth 8-7023] instance 'decoder_jr_reg' of module 'instrdecoder' has 9 connections declared, but only 2 given [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:119]
+INFO: [Synth 8-6155] done synthesizing module 'bypass' (16#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/bypass.v:1]
+INFO: [Synth 8-6157] synthesizing module 'control' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/control.v:1]
+WARNING: [Synth 8-308] ignoring empty port [C:/Users/ws186/Documents/FGPA-CPU/main/proc/control.v:16]
+INFO: [Synth 8-6155] done synthesizing module 'control' (17#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/control.v:1]
+WARNING: [Synth 8-7023] instance 'ctrl' of module 'control' has 15 connections declared, but only 14 given [C:/Users/ws186/Documents/FGPA-CPU/main/proc/processor.v:248]
+INFO: [Synth 8-6157] synthesizing module 'mux_4_1' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/mux.v:8]
+INFO: [Synth 8-6155] done synthesizing module 'mux_4_1' (18#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/mux.v:8]
+INFO: [Synth 8-6157] synthesizing module 'alu' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/alu.v:1]
+INFO: [Synth 8-6157] synthesizing module 'two_complement' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/alu.v:90]
+INFO: [Synth 8-6157] synthesizing module 'bitwisenot' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/bitwise.v:79]
+INFO: [Synth 8-6155] done synthesizing module 'bitwisenot' (19#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/bitwise.v:79]
+INFO: [Synth 8-6155] done synthesizing module 'two_complement' (20#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/alu.v:90]
+INFO: [Synth 8-6157] synthesizing module 'bitwiseand' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/bitwise.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'bitwiseand' (21#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/bitwise.v:1]
+INFO: [Synth 8-6157] synthesizing module 'bitwiseor' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/bitwise.v:40]
+INFO: [Synth 8-6155] done synthesizing module 'bitwiseor' (22#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/bitwise.v:40]
+INFO: [Synth 8-6157] synthesizing module 'sll' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:1]
+INFO: [Synth 8-6157] synthesizing module 'sll16' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:266]
+INFO: [Synth 8-6155] done synthesizing module 'sll16' (23#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:266]
+INFO: [Synth 8-6157] synthesizing module 'sll8' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:228]
+INFO: [Synth 8-6155] done synthesizing module 'sll8' (24#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:228]
+INFO: [Synth 8-6157] synthesizing module 'sll4' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:190]
+INFO: [Synth 8-6155] done synthesizing module 'sll4' (25#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:190]
+INFO: [Synth 8-6157] synthesizing module 'sll2' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:152]
+INFO: [Synth 8-6155] done synthesizing module 'sll2' (26#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:152]
+INFO: [Synth 8-6157] synthesizing module 'sll1' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:114]
+INFO: [Synth 8-6155] done synthesizing module 'sll1' (27#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:114]
+INFO: [Synth 8-6155] done synthesizing module 'sll' (28#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/shifter.v:1]
+INFO: [Synth 8-6157] synthesizing module 'mux_8_1' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/mux.v:18]
+INFO: [Synth 8-6155] done synthesizing module 'mux_8_1' (29#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/mux.v:18]
+INFO: [Synth 8-6155] done synthesizing module 'alu' (30#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/alu/alu.v:1]
+INFO: [Synth 8-6157] synthesizing module 'multdiv' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/multdiv.v:1]
+INFO: [Synth 8-6157] synthesizing module 'multiplier' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/multiplier.v:14]
+INFO: [Synth 8-6157] synthesizing module 'counter' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/counter.v:8]
+INFO: [Synth 8-6155] done synthesizing module 'counter' (31#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/counter.v:8]
+INFO: [Synth 8-6157] synthesizing module 'register_65' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/regfile/register65bits.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'register_65' (32#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/regfile/register65bits.v:1]
+INFO: [Synth 8-6157] synthesizing module 'multi_control' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/multi_control.v:2]
+INFO: [Synth 8-6155] done synthesizing module 'multi_control' (33#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/multi_control.v:2]
+INFO: [Synth 8-6155] done synthesizing module 'multiplier' (34#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/multiplier.v:14]
+INFO: [Synth 8-6157] synthesizing module 'divider' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/divider.v:1]
+INFO: [Synth 8-6157] synthesizing module 'counter32' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/counter.v:25]
+INFO: [Synth 8-6155] done synthesizing module 'counter32' (35#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/counter.v:25]
+INFO: [Synth 8-6157] synthesizing module 'register_64' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/regfile/register64bits.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'register_64' (36#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/regfile/register64bits.v:1]
+INFO: [Synth 8-6157] synthesizing module 'div_control_before_add' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/div_control.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'div_control_before_add' (37#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/div_control.v:1]
+WARNING: [Synth 8-7071] port 'isNotEqual' of module 'alu' is unconnected for instance 'ALU' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/divider.v:63]
+WARNING: [Synth 8-7071] port 'isLessThan' of module 'alu' is unconnected for instance 'ALU' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/divider.v:63]
+WARNING: [Synth 8-7071] port 'overflow' of module 'alu' is unconnected for instance 'ALU' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/divider.v:63]
+WARNING: [Synth 8-7023] instance 'ALU' of module 'alu' has 8 connections declared, but only 5 given [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/divider.v:63]
+INFO: [Synth 8-6155] done synthesizing module 'divider' (38#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/divider.v:1]
+WARNING: [Synth 8-7071] port 'remainder' of module 'divider' is unconnected for instance 'NON_RESTORING_DIVIDER' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/multdiv.v:71]
+WARNING: [Synth 8-7023] instance 'NON_RESTORING_DIVIDER' of module 'divider' has 8 connections declared, but only 7 given [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/multdiv.v:71]
+INFO: [Synth 8-6155] done synthesizing module 'multdiv' (39#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/multidiv/multdiv.v:1]
+INFO: [Synth 8-6157] synthesizing module 'exception' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/exception.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'exception' (40#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/exception.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'processor' (41#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/processor.v:20]
+INFO: [Synth 8-6157] synthesizing module 'adc_data_capture' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/signal_processing/adc_capture.v:1]
+INFO: [Synth 8-6157] synthesizing module 'xadc_wiz_0' [C:/Users/ws186/Documents/Vivado projects/CPU-ECG-EMG-portable-device/CPU-ECG-EMG-portable-device.runs/synth_1/.Xil/Vivado-6588-P2-07/realtime/xadc_wiz_0_stub.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'xadc_wiz_0' (42#1) [C:/Users/ws186/Documents/Vivado projects/CPU-ECG-EMG-portable-device/CPU-ECG-EMG-portable-device.runs/synth_1/.Xil/Vivado-6588-P2-07/realtime/xadc_wiz_0_stub.v:5]
+WARNING: [Synth 8-7071] port 'busy_out' of module 'xadc_wiz_0' is unconnected for instance 'xadc_inst' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/signal_processing/adc_capture.v:16]
+WARNING: [Synth 8-7071] port 'channel_out' of module 'xadc_wiz_0' is unconnected for instance 'xadc_inst' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/signal_processing/adc_capture.v:16]
+WARNING: [Synth 8-7071] port 'eoc_out' of module 'xadc_wiz_0' is unconnected for instance 'xadc_inst' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/signal_processing/adc_capture.v:16]
+WARNING: [Synth 8-7071] port 'eos_out' of module 'xadc_wiz_0' is unconnected for instance 'xadc_inst' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/signal_processing/adc_capture.v:16]
+WARNING: [Synth 8-7071] port 'alarm_out' of module 'xadc_wiz_0' is unconnected for instance 'xadc_inst' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/signal_processing/adc_capture.v:16]
+WARNING: [Synth 8-7023] instance 'xadc_inst' of module 'xadc_wiz_0' has 19 connections declared, but only 14 given [C:/Users/ws186/Documents/FGPA-CPU/main/proc/signal_processing/adc_capture.v:16]
+INFO: [Synth 8-6155] done synthesizing module 'adc_data_capture' (43#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/signal_processing/adc_capture.v:1]
+INFO: [Synth 8-6157] synthesizing module 'VGAController' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGAController.v:2]
+INFO: [Synth 8-6157] synthesizing module 'VGATimingGenerator' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGATimingGenerator.v:2]
+	Parameter HEIGHT bound to: 480 - type: integer 
+	Parameter WIDTH bound to: 640 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'VGATimingGenerator' (44#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGATimingGenerator.v:2]
+INFO: [Synth 8-6157] synthesizing module 'VGA_RAM' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGA_RAM.v:2]
+	Parameter DATA_WIDTH bound to: 9 - type: integer 
+	Parameter ADDRESS_WIDTH bound to: 20 - type: integer 
+	Parameter DEPTH bound to: 307200 - type: integer 
+	Parameter MEMFILE bound to: 488'b01000011001110100010111101010101011100110110010101110010011100110010111101110111011100110011000100111000001101100010111101000100011011110110001101110101011011010110010101101110011101000111001100101111010001100100011101010000010000010010110101000011010100000101010100101111011000010111001101110011011001010111010001110011001011110110001001100001011000110110101101100111011100100110111101110101011011100110010000101111011010010110110101100001011001110110010100101110011011010110010101101101 
+INFO: [Synth 8-3876] $readmem data file 'C:/Users/ws186/Documents/FGPA-CPU/assets/background/image.mem' is read successfully [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGA_RAM.v:13]
+INFO: [Synth 8-6155] done synthesizing module 'VGA_RAM' (45#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGA_RAM.v:2]
+WARNING: [Synth 8-7071] port 'dataIn' of module 'VGA_RAM' is unconnected for instance 'ImageData' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGAController.v:64]
+WARNING: [Synth 8-7023] instance 'ImageData' of module 'VGA_RAM' has 5 connections declared, but only 4 given [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGAController.v:64]
+INFO: [Synth 8-6157] synthesizing module 'VGA_RAM__parameterized0' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGA_RAM.v:2]
+	Parameter DATA_WIDTH bound to: 12 - type: integer 
+	Parameter ADDRESS_WIDTH bound to: 9 - type: integer 
+	Parameter DEPTH bound to: 256 - type: integer 
+	Parameter MEMFILE bound to: 496'b0100001100111010001011110101010101110011011001010111001001110011001011110111011101110011001100010011100000110110001011110100010001101111011000110111010101101101011001010110111001110100011100110010111101000110010001110101000001000001001011010100001101010000010101010010111101100001011100110111001101100101011101000111001100101111011000100110000101100011011010110110011101110010011011110111010101101110011001000010111101100011011011110110110001101111011100100111001100101110011011010110010101101101 
+INFO: [Synth 8-3876] $readmem data file 'C:/Users/ws186/Documents/FGPA-CPU/assets/background/colors.mem' is read successfully [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGA_RAM.v:13]
+INFO: [Synth 8-6155] done synthesizing module 'VGA_RAM__parameterized0' (45#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGA_RAM.v:2]
+WARNING: [Synth 8-7071] port 'dataIn' of module 'VGA_RAM' is unconnected for instance 'ColorPalette' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGAController.v:78]
+WARNING: [Synth 8-7023] instance 'ColorPalette' of module 'VGA_RAM' has 5 connections declared, but only 4 given [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGAController.v:78]
+INFO: [Synth 8-6155] done synthesizing module 'VGAController' (46#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/vga/VGAController.v:2]
+INFO: [Synth 8-6157] synthesizing module 'ROM' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/ROM.v:2]
+	Parameter MEMFILE bound to: 184'b0110010001101111011101110110111001110011011000010110110101110000011011000110100101101110011001110010110101110011011010010110011101101110011000010110110000101110011011010110010101101101 
+INFO: [Synth 8-3876] $readmem data file 'downsampling-signal.mem' is read successfully [C:/Users/ws186/Documents/FGPA-CPU/main/proc/ROM.v:11]
+INFO: [Synth 8-6155] done synthesizing module 'ROM' (47#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/ROM.v:2]
+INFO: [Synth 8-6157] synthesizing module 'regfile' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/regfile/regfile.v:1]
+INFO: [Synth 8-6157] synthesizing module 'decoder' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/regfile/decoder.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'decoder' (48#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/regfile/decoder.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'regfile' (49#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/regfile/regfile.v:1]
+INFO: [Synth 8-251] MIPS wrote to 0x6AC: x [C:/Users/ws186/Documents/FGPA-CPU/main/proc/Wrapper.v:182]
+INFO: [Synth 8-6157] synthesizing module 'RAM' [C:/Users/ws186/Documents/FGPA-CPU/main/proc/RAM.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'RAM' (50#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/RAM.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'Wrapper' (51#1) [C:/Users/ws186/Documents/FGPA-CPU/main/proc/Wrapper.v:10]
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:06 . Memory (MB): peak = 1424.996 ; gain = 95.605
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 1424.996 ; gain = 95.605
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 1424.996 ; gain = 95.605
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.164 . Memory (MB): peak = 1424.996 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [c:/Users/ws186/Documents/Vivado projects/CPU-ECG-EMG-portable-device/CPU-ECG-EMG-portable-device.gen/sources_1/ip/xadc_wiz_0/xadc_wiz_0/xadc_wiz_0_in_context.xdc] for cell 'ADC_Capture/xadc_inst'
+Finished Parsing XDC File [c:/Users/ws186/Documents/Vivado projects/CPU-ECG-EMG-portable-device/CPU-ECG-EMG-portable-device.gen/sources_1/ip/xadc_wiz_0/xadc_wiz_0/xadc_wiz_0_in_context.xdc] for cell 'ADC_Capture/xadc_inst'
+Parsing XDC File [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc]
+WARNING: [Vivado 12-584] No ports matched 'SW[0]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:23]
+WARNING: [Vivado 12-584] No ports matched 'SW[1]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:24]
+WARNING: [Vivado 12-584] No ports matched 'SW[2]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:25]
+WARNING: [Vivado 12-584] No ports matched 'SW[3]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:26]
+WARNING: [Vivado 12-584] No ports matched 'SW[4]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:27]
+WARNING: [Vivado 12-584] No ports matched 'SW[5]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:28]
+WARNING: [Vivado 12-584] No ports matched 'SW[6]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:29]
+WARNING: [Vivado 12-584] No ports matched 'SW[7]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:30]
+WARNING: [Vivado 12-584] No ports matched 'SW[8]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:31]
+WARNING: [Vivado 12-584] No ports matched 'SW[9]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:32]
+WARNING: [Vivado 12-584] No ports matched 'SW[10]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:33]
+WARNING: [Vivado 12-584] No ports matched 'SW[11]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:34]
+WARNING: [Vivado 12-584] No ports matched 'SW[12]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:35]
+WARNING: [Vivado 12-584] No ports matched 'SW[13]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:36]
+WARNING: [Vivado 12-584] No ports matched 'SW[14]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:37]
+WARNING: [Vivado 12-584] No ports matched 'SW[15]'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:38]
+WARNING: [Vivado 12-584] No ports matched 'BTNU'. [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc:59]
+Finished Parsing XDC File [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc]
+WARNING: [Project 1-498] One or more constraints failed evaluation while reading constraint file [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc] and the design contains unresolved black boxes. These constraints will be read post-synthesis (as long as their source constraint file is marked as used_in_implementation) and should be applied correctly then. You should review the constraints listed in the file [.Xil/Wrapper_propImpl.xdc] and check the run log file to verify that these constraints were correctly applied.
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [C:/Users/ws186/Documents/FGPA-CPU/main/constraints.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/Wrapper_propImpl.xdc].
+Resolution: To avoid this warning, move constraints listed in [.Xil/Wrapper_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.007 . Memory (MB): peak = 1497.555 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.025 . Memory (MB): peak = 1497.555 ; gain = 0.000
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:12 ; elapsed = 00:00:13 . Memory (MB): peak = 1497.555 ; gain = 168.164
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7a100tcsg324-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:12 ; elapsed = 00:00:13 . Memory (MB): peak = 1497.555 ; gain = 168.164
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+Applied set_property KEEP_HIERARCHY = SOFT for ADC_Capture/xadc_inst. (constraint file  auto generated constraint).
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:12 ; elapsed = 00:00:13 . Memory (MB): peak = 1497.555 ; gain = 168.164
+---------------------------------------------------------------------------------
+INFO: [Synth 8-3971] The signal "RAM:/MemoryArray_reg" was recognized as a true dual port RAM template.
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:14 ; elapsed = 00:00:15 . Memory (MB): peak = 1497.555 ; gain = 168.164
+---------------------------------------------------------------------------------
+INFO: [Synth 8-223] decloning instance 'CPU/BYP/decoder_IR_DX' (instrdecoder) to 'CPU/BYP/decoder_jr_reg'
+INFO: [Synth 8-223] decloning instance 'CPU/MULT_CTRL_2' (dffe_ref) to 'CPU/DIV_CTRL_2'
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
++---Adders : 
+	   2 Input   18 Bit       Adders := 1     
+	   2 Input   12 Bit       Adders := 3     
+	   2 Input   10 Bit       Adders := 4     
+	   2 Input    9 Bit       Adders := 2     
+	   2 Input    2 Bit       Adders := 2     
++---XORs : 
+	   3 Input      1 Bit         XORs := 513   
+	   2 Input      1 Bit         XORs := 42    
++---Registers : 
+	               32 Bit    Registers := 3     
+	               30 Bit    Registers := 1     
+	               18 Bit    Registers := 1     
+	               12 Bit    Registers := 6     
+	               10 Bit    Registers := 4     
+	                9 Bit    Registers := 1     
+	                7 Bit    Registers := 1     
+	                2 Bit    Registers := 2     
+	                1 Bit    Registers := 1844  
++---RAMs : 
+	            2700K Bit	(307200 X 9 bit)          RAMs := 1     
+	             128K Bit	(4096 X 32 bit)          RAMs := 1     
+	               3K Bit	(256 X 12 bit)          RAMs := 1     
++---ROMs : 
+	                    ROMs := 1     
++---Muxes : 
+	   2 Input   65 Bit        Muxes := 2     
+	   2 Input   64 Bit        Muxes := 1     
+	   2 Input   32 Bit        Muxes := 108   
+	   2 Input   18 Bit        Muxes := 1     
+	   2 Input   12 Bit        Muxes := 7     
+	   2 Input   11 Bit        Muxes := 1     
+	   2 Input   10 Bit        Muxes := 1     
+	   2 Input    9 Bit        Muxes := 1     
+	   2 Input    7 Bit        Muxes := 1     
+	   2 Input    5 Bit        Muxes := 6     
+	   3 Input    5 Bit        Muxes := 1     
+	   7 Input    3 Bit        Muxes := 1     
+	   9 Input    2 Bit        Muxes := 2     
+	   4 Input    2 Bit        Muxes := 1     
+	   5 Input    2 Bit        Muxes := 1     
+	   2 Input    1 Bit        Muxes := 22    
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 240 (col length:80)
+BRAMs: 270 (col length: RAMB18 80 RAMB36 40)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+DSP Report: Generating DSP DISPLAY/imgAddress, operation Mode is: C+(A:0x280)*B.
+DSP Report: operator DISPLAY/imgAddress is absorbed into DSP DISPLAY/imgAddress.
+DSP Report: operator DISPLAY/imgAddress0 is absorbed into DSP DISPLAY/imgAddress.
+INFO: [Synth 8-3971] The signal "Wrapper/ProcMem/MemoryArray_reg" was recognized as a true dual port RAM template.
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:33 ; elapsed = 00:00:34 . Memory (MB): peak = 1502.895 ; gain = 173.504
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+ROM: Preliminary Mapping Report
++------------+---------------------+---------------+----------------+
+|Module Name | RTL Object          | Depth x Width | Implemented As | 
++------------+---------------------+---------------+----------------+
+|Wrapper     | InstMem/dataOut_reg | 4096x30       | Block RAM      | 
++------------+---------------------+---------------+----------------+
+
+
+Block RAM: Preliminary Mapping Report (see note below)
++-------------------------+-------------------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+|Module Name              | RTL Object              | PORT A (Depth x Width) | W | R | PORT B (Depth x Width) | W | R | Ports driving FF | RAMB18 | RAMB36 | 
++-------------------------+-------------------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+|VGA_RAM:                 | MemoryArray_reg         | 300 K x 9(NO_CHANGE)   | W | R |                        |   |   | Port A           | 0      | 90     | 
+|VGA_RAM__parameterized0: | MemoryArray_reg         | 256 x 12(NO_CHANGE)    | W | R |                        |   |   | Port A           | 1      | 0      | 
+|Wrapper                  | ProcMem/MemoryArray_reg | 4 K x 32(READ_FIRST)   | W | R | 4 K x 32(READ_FIRST)   | W | R | Port A and B     | 0      | 4      | 
++-------------------------+-------------------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+
+Note: The table above is a preliminary report that shows the Block RAMs at the current stage of the synthesis flow. Some Block RAMs may be reimplemented as non Block RAM primitives later in the synthesis flow. Multiple instantiated Block RAMs are reported only once. 
+
+DSP: Preliminary Mapping Report (see note below)
++--------------+---------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+|Module Name   | DSP Mapping   | A Size | B Size | C Size | D Size | P Size | AREG | BREG | CREG | DREG | ADREG | MREG | PREG | 
++--------------+---------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+|VGAController | C+(A:0x280)*B | 9      | 10     | 10     | -      | 19     | 0    | 0    | 0    | -    | -     | 0    | 0    | 
++--------------+---------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+
+Note: The table above is a preliminary report that shows the DSPs inferred at the current stage of the synthesis flow. Some DSP may be reimplemented as non DSP primitives later in the synthesis flow. Multiple instantiated DSPs are reported only once.
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:40 ; elapsed = 00:00:41 . Memory (MB): peak = 1584.145 ; gain = 254.754
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:00:41 ; elapsed = 00:00:43 . Memory (MB): peak = 1595.746 ; gain = 266.355
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+Block RAM: Final Mapping Report
++-------------------------+-------------------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+|Module Name              | RTL Object              | PORT A (Depth x Width) | W | R | PORT B (Depth x Width) | W | R | Ports driving FF | RAMB18 | RAMB36 | 
++-------------------------+-------------------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+|VGA_RAM:                 | MemoryArray_reg         | 300 K x 9(NO_CHANGE)   | W | R |                        |   |   | Port A           | 0      | 90     | 
+|VGA_RAM__parameterized0: | MemoryArray_reg         | 256 x 12(NO_CHANGE)    | W | R |                        |   |   | Port A           | 1      | 0      | 
+|Wrapper                  | ProcMem/MemoryArray_reg | 4 K x 32(READ_FIRST)   | W | R | 4 K x 32(READ_FIRST)   | W | R | Port A and B     | 0      | 4      | 
++-------------------------+-------------------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_1_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_1_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_1_2 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_1_3 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_1_4 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_1_5 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_1_6 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_1_7 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_3_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_3_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_3_2 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_3_3 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_3_4 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_3_5 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_3_6 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_3_7 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_5_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_5_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_5_2 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_5_3 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_5_4 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_5_5 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_5_6 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_5_7 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_7_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_7_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_7_2 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_7_3 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_7_4 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_7_5 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_7_6 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_7_7 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_9_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_9_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_9_2 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_9_3 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_9_4 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_9_5 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_9_6 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ImageData/MemoryArray_reg_9_7 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance DISPLAY/ColorPalette/MemoryArray_reg (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance ProcMem/MemoryArray_reg_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance ProcMem/MemoryArray_reg_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance ProcMem/MemoryArray_reg_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance ProcMem/MemoryArray_reg_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance ProcMem/MemoryArray_reg_2 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance ProcMem/MemoryArray_reg_3 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance InstMem/dataOut_reg_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance InstMem/dataOut_reg_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance InstMem/dataOut_reg_2 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance InstMem/dataOut_reg_3 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:00:43 ; elapsed = 00:00:44 . Memory (MB): peak = 1646.590 ; gain = 317.199
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:00:45 ; elapsed = 00:00:47 . Memory (MB): peak = 1659.414 ; gain = 330.023
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:45 ; elapsed = 00:00:47 . Memory (MB): peak = 1659.414 ; gain = 330.023
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:46 ; elapsed = 00:00:47 . Memory (MB): peak = 1659.414 ; gain = 330.023
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:46 ; elapsed = 00:00:47 . Memory (MB): peak = 1659.414 ; gain = 330.023
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:46 ; elapsed = 00:00:48 . Memory (MB): peak = 1660.395 ; gain = 331.004
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:46 ; elapsed = 00:00:48 . Memory (MB): peak = 1660.395 ; gain = 331.004
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++------+--------------+----------+
+|      |BlackBox name |Instances |
++------+--------------+----------+
+|1     |xadc_wiz_0    |         1|
++------+--------------+----------+
+
+Report Cell Usage: 
++------+---------+------+
+|      |Cell     |Count |
++------+---------+------+
+|1     |xadc_wiz |     1|
+|2     |BUFG     |     3|
+|3     |CARRY4   |    10|
+|4     |DSP48E1  |     1|
+|5     |LUT1     |    13|
+|6     |LUT2     |   279|
+|7     |LUT3     |   284|
+|8     |LUT4     |   262|
+|9     |LUT5     |   498|
+|10    |LUT6     |  1611|
+|11    |MUXF7    |   258|
+|12    |MUXF8    |    32|
+|13    |RAMB18E1 |     1|
+|14    |RAMB36E1 |    88|
+|99    |FDCE     |  1634|
+|100   |FDRE     |   141|
+|101   |FDSE     |     4|
+|102   |IBUF     |     6|
+|103   |OBUF     |    30|
++------+---------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:46 ; elapsed = 00:00:48 . Memory (MB): peak = 1660.395 ; gain = 331.004
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 0 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:37 ; elapsed = 00:00:45 . Memory (MB): peak = 1660.395 ; gain = 258.445
+Synthesis Optimization Complete : Time (s): cpu = 00:00:46 ; elapsed = 00:00:48 . Memory (MB): peak = 1660.395 ; gain = 331.004
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.123 . Memory (MB): peak = 1672.430 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 390 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.004 . Memory (MB): peak = 1678.129 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Synth Design complete, checksum: 38ad87b7
+INFO: [Common 17-83] Releasing license: Synthesis
+178 Infos, 82 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:00:51 ; elapsed = 00:00:53 . Memory (MB): peak = 1678.129 ; gain = 348.738
+INFO: [Common 17-1381] The checkpoint 'C:/Users/ws186/Documents/Vivado projects/CPU-ECG-EMG-portable-device/CPU-ECG-EMG-portable-device.runs/synth_1/Wrapper.dcp' has been generated.
+INFO: [runtcl-4] Executing : report_utilization -file Wrapper_utilization_synth.rpt -pb Wrapper_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Tue Apr 22 17:03:42 2025...
