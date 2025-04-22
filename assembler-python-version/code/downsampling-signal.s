@@ -4,6 +4,7 @@ start:
     addi $t2, $zero, 0        # counter = 0
     addi $t3, $zero, 2        # stride = 2
     addi $t5, $zero, 320      # max count = 320
+    addi $t6, $zero, 1000          # max count for output = 0
 
 loop:
     blt  $t2, $t5, do_copy
@@ -11,7 +12,10 @@ loop:
 
 do_copy:
     lw   $t4, 0($t0)
-    sw   $t4, 0($t1)
+    nop
+    nop
+    nop
+    sw   $t4, 0($t1)          # Store the value from input
     addi $t0, $t0, 2          # increment input address by 2 words (assuming word addressing)
     addi $t1, $t1, 1          # increment output address
     addi $t2, $t2, 1          # increment counter
