@@ -99,6 +99,15 @@ module VGAController(
                     end
                 end
             end
+            else if (x >= 55 && x < 390 && y >= 254 && y < 434) begin
+                if (x < 360) begin  // limit to 320 data points
+                    sig_addr <= 12'h6AD + x - 40;  // fetch address based on x
+                    // Scale signal to box height (181 px): assume sig_data[11:4] is 8 bits
+                    if (y == (407 - sig_data[11:4])) begin
+                        pixelColor <= 12'b111100000000; // white
+                    end
+                end
+            end
         end else begin
             pixelColor <= 12'd0; // black outside visible area
         end
