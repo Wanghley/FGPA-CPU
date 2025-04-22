@@ -94,7 +94,7 @@ module VGAController(
                 if (x < 360) begin  // limit to 320 data points
                     sig_addr <= 12'h559 + x - 40;  // fetch address based on x
                     // Scale signal to box height (181 px): assume sig_data[11:4] is 8 bits
-                    if (y == (226 - sig_data[11:4])) begin
+                    if (y == (135 - sig_data[11:4])) begin
                         pixelColor <= 12'b000011110000; // green
                     end
                 end
@@ -103,7 +103,7 @@ module VGAController(
                 if (x < 360) begin  // limit to 320 data points
                     sig_addr <= 12'h6AD + x - 40;  // fetch address based on x
                     // Scale signal to box height (181 px): assume sig_data[11:4] is 8 bits
-                    if (y == (407 - sig_data[11:4])) begin
+                    if (y == (344 - sig_data[11:4])) begin
                         pixelColor <= 12'b111100000000; // white
                     end
                 end
