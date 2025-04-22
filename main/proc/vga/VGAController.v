@@ -9,7 +9,7 @@ module VGAController(
     output [3:0] VGA_G,
     output [3:0] VGA_B,
 
-    output [15:0] LED,
+    output reg [15:0] LED,
 
     output reg [11:0] sig_addr,
     input      [31:0] sig_data
