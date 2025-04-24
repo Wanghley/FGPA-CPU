@@ -74,7 +74,7 @@ module regfile (
     endgenerate
 
     // want last LED to be s3[0] and first 10 bits of LED to be reg 20
-    assign LED = {s3[0], 4'b0, regs[20][9:0]}; // Assign the first 16 bits of register 1 to LED
-    assign LED = regs[20][15:0]; // Assign the first 16 bits of register 1 to LED
+    assign LED = {regs[19][0], 5'b0, regs[20][9:0]}; // Assign the first 16 bits of register 1 to LED
+//    assign LED = regs[20][15:0]; // Assign the first 16 bits of register 1 to LED
 
 endmodule
