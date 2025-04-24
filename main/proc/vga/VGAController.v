@@ -83,6 +83,36 @@ module VGAController(
         .wEn(1'b0)
     );
 
+    // RAM for Myo Data
+    wire [MYO_RAM_ADDR_WIDTH-1:0] myo_addr;
+    wire [31:0] myo_color;
+    VGA_RAM #(		
+        .DEPTH(PIXEL_COUNT),
+        .DATA_WIDTH(PALETTE_ADDRESS_WIDTH),
+        .ADDRESS_WIDTH(PIXEL_ADDRESS_WIDTH),
+        .MEMFILE("C:/Users/ws186/Documents/FGPA-CPU/assets/myo/image.mem")
+    ) MyoData (
+        .clk(clock),
+        .addr(myo_addr),
+        .dataOut(myo_color),
+        .wEn(1'b0)
+    );
+
+    // Myo Data Color Palette
+    wire [BITS_PER_COLOR-1:0] myo_colorData;
+    VGA_RAM #(
+        .DEPTH(PALETTE_COLOR_COUNT),
+        .DATA_WIDTH(BITS_PER_COLOR),
+        .ADDRESS_WIDTH(PALETTE_ADDRESS_WIDTH),
+        .MEMFILE("C:/Users/ws186/Documents/FGPA-CPU/assets/myo/colors.mem")
+    ) MyoPalette (
+        .clk(clock),
+        .addr(myo_color),
+        .dataOut(myo_colorData),
+        .wEn(1'b0)
+    );
+
+
     // Sprite data for digits (0-9)
     localparam SPRITE_COUNT = 10; // 10 digits (0-9)
     localparam SPRITE_WIDTH = 32;
@@ -210,6 +240,16 @@ module VGAController(
                 if (digit_pixel_on)
                     pixelColor <= 12'b1111_1111_1111; // white
             end
+
+            // === Render Myo Data ===
+            else if (x>=430 && x<=596 && y>=365 && y<=430) begin
+                // get data from MyoData RAM and color
+                myo_data = MyoDataRAM[y - 365][x - 430];
+                pixelColor <= myo_data ? 12'b0000_0000_1111 : 12'b0000_0000_0000; // blue if data is present
+            end
+
+    
+
         end
     end
 
